@@ -3,25 +3,17 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-<<<<<<< HEAD
-    "dev": "astro dev",
-=======
     "dev": "astro dev --verbose",
->>>>>>> 477fb62 (Add initial definitions for various concepts related to liminality and social dynamics)
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "astro": "^5.6.1",
-<<<<<<< HEAD
-    "gray-matter": "^4.0.3"
-=======
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
     "remark": "^15.0.1",
     "remark-wiki-link": "^2.0.1"
->>>>>>> 477fb62 (Add initial definitions for various concepts related to liminality and social dynamics)
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
