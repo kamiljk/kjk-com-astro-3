@@ -22,8 +22,8 @@ export function getAllPosts(): Post[] {
   const files = fs.readdirSync(contentDir);
 
   return files
-    .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'))
-    .map((filename) => {
+    .filter((f: string) => f.endsWith('.md') || f.endsWith('.mdx'))
+    .map((filename: string) => {
       const raw = fs.readFileSync(path.join(contentDir, filename), 'utf-8');
       const { data, content } = matter(raw);
 

@@ -3,7 +3,10 @@ import { getEntryBySlug } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 
 const { slug } = Astro.params;
-const doc = await getEntryBySlug("docs", slug);
+const doc = await getEntryBySlug<
+  { Content: () => string; data: { title: string; pubDate: string } },
+  "docs"
+>("docs", slug);
 
 if (!doc) {
   throw new Error(`Document with slug '${slug}' not found.`);

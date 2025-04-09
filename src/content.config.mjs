@@ -6,6 +6,8 @@ const docs = defineCollection({
     description: z.string().optional(),
     pubDate: z.date(),
     heroImage: z.string().optional(),
+  }).extend({
+    Content: z.function().returns(z.string())
   }),
 });
 

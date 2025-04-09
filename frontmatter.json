@@ -18,28 +18,39 @@
       "clearEmpty": true,
       "fields": [
         {
-          "title": "Title",
+          "title": "title",
           "name": "title",
-          "type": "string",
-          "single": true
-        },
-        {
-          "title": "Description",
-          "name": "description",
           "type": "string"
         },
         {
-          "title": "Publishing date",
-          "name": "pubDate",
-          "type": "datetime",
-          "default": "{{now}}",
-          "isPublishDate": true
+          "title": "scale",
+          "name": "scale",
+          "type": "string"
         },
         {
-          "title": "Content preview",
-          "name": "heroImage",
-          "type": "image",
-          "isPreviewImage": true
+          "title": "maturity",
+          "name": "maturity",
+          "type": "string"
+        },
+        {
+          "title": "source",
+          "name": "source",
+          "type": "string"
+        },
+        {
+          "title": "created",
+          "name": "created",
+          "type": "datetime"
+        },
+        {
+          "title": "last_tended",
+          "name": "last_tended",
+          "type": "datetime"
+        },
+        {
+          "title": "epistemic_status",
+          "name": "epistemic_status",
+          "type": "string"
         }
       ]
     }

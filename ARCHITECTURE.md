@@ -2,107 +2,171 @@
 
 This document provides an overview of the Astro project structure, detailing the purpose of each file, how they interact, and what to edit for specific tasks.
 
-## File Structure Overview
+## Project Structure
+
+Here is a tree diagram of the project's architecture:
 
 ```
-astro.config.mjs
-package.json
-README.md
-tailwind.config.js
-tsconfig.json
-public/
-	favicon.svg
-src/
-	assets/
-		astro.svg
-		background.svg
-	components/
-		Welcome.astro
-	content/
-		test.md
-	layouts/
-		Layout.astro
-	lib/
-		content-utils.ts
-	pages/
-		index.astro
-		test.astro
-	styles/
-		global.css
+project-root
+├── public
+│   ├── bits
+│   │   ├── badghost
+│   │   ├── chaos-pendulum
+│   │   ├── ...other games...
+│   └── favicon.svg
+├── src
+│   ├── content
+│   │   ├── docs
+│   │   │   ├── actor-network-theory.md
+│   │   │   ├── ...other docs...
+│   ├── pages
+│   │   ├── index.astro
+│   │   ├── games.astro
+│   │   └── docs
+│   │       └── [slug].astro
+│   ├── layouts
+│   │   └── Layout.astro
+│   ├── components
+│   │   └── Welcome.astro
+│   └── lib
+│       └── content-utils.ts
+├── astro.config.mjs
+├── tailwind.config.js
+├── tsconfig.json
+└── package.json
 ```
 
-## File Descriptions
+---
 
-### Root Files
+## Relationships Between Files
 
-- **astro.config.mjs**: Configuration file for the Astro framework. Includes integrations like Tailwind CSS.
-- **package.json**: Defines project dependencies and scripts for development, building, and previewing.
-- **README.md**: Project documentation and setup instructions.
-- **tailwind.config.js**: Configuration for Tailwind CSS, specifying content paths and theme extensions.
-- **tsconfig.json**: TypeScript configuration file, extending Astro's strict settings.
+### Dynamic Routing for Docs
 
-### Public Folder
+```
+src/content/docs/*.md
+   └── Rendered dynamically by:
+       └── src/pages/docs/[slug].astro
+           └── Uses Layout:
+               └── src/layouts/Layout.astro
+```
 
-- **favicon.svg**: The favicon for the website, displayed in browser tabs.
+**Explanation:**
+- **`src/pages/docs/[slug].astro`**: Dynamically renders Markdown files from the `src/content/docs` folder. The `[slug]` parameter matches the filename of the Markdown file, allowing for dynamic routing.
+- **`src/layouts/Layout.astro`**: Provides a consistent structure for all pages, including a header, footer, and main content area. It ensures that the dynamic content is wrapped in a cohesive design.
 
-### `src` Folder
+**Visual Representation:**
+```
+Layout.astro
+├── Header
+├── Main Content
+│   └── [slug].astro
+│       └── Markdown Content (from src/content/docs)
+└── Footer
+```
 
-#### Assets
+---
 
-- **astro.svg**: Logo for Astro, used in the `Welcome` component.
-- **background.svg**: Background image for the `Welcome` component.
+### Games Page and Public Assets
 
-#### Components
+```
+public/bits/
+   ├── badghost/
+   ├── chaos-pendulum/
+   ├── ...other games...
+   └── Linked by:
+       └── src/pages/games.astro
+           └── Uses Layout:
+               └── src/layouts/Layout.astro
+```
 
-- **Welcome.astro**: A reusable component that displays a hero section with links and a background image.
+**Explanation:**
+- **`public/bits/`**: Contains the assets and HTML files for interactive games. Each game is stored in its own folder.
+- **`src/pages/games.astro`**: Lists all the games available in the `public/bits` folder and provides links to play them.
+- **`src/layouts/Layout.astro`**: Ensures the games page has a consistent design with the rest of the site.
 
-#### Content
+**Visual Representation:**
+```
+Layout.astro
+├── Header
+├── Main Content
+│   └── games.astro
+│       └── Links to Games (from public/bits)
+└── Footer
+```
 
-- **test.md**: Markdown file for testing content rendering. Can be replaced with actual content files.
+---
 
-#### Layouts
+### Homepage
 
-- **Layout.astro**: The main layout file providing the HTML structure for pages. Includes a `<slot />` for injecting page-specific content.
+```
+src/pages/index.astro
+   └── Uses Layout:
+       └── src/layouts/Layout.astro
+   └── Includes Component:
+       └── src/components/Welcome.astro
+```
 
-#### Library
+**Explanation:**
+- **`src/pages/index.astro`**: The landing page of the site. It introduces the site and provides navigation links to key sections like "Docs" and "Games."
+- **`src/components/Welcome.astro`**: A reusable component that displays a hero section with a background image and links to external resources.
+- **`src/layouts/Layout.astro`**: Wraps the homepage content in a consistent layout with a header and footer.
 
-- **content-utils.ts**: Utility functions for handling content. Includes `getAllPosts()` to fetch and parse Markdown files from the `content` directory.
+**Visual Representation:**
+```
+Layout.astro
+├── Header
+├── Main Content
+│   └── index.astro
+│       └── Welcome.astro (Hero Section)
+└── Footer
+```
 
-#### Pages
+---
 
-- **index.astro**: The homepage of the site. Uses the `Layout` and `Welcome` components.
-- **test.astro**: A test page demonstrating Tailwind CSS usage.
+### Content Utilities
 
-#### Styles
+```
+src/lib/content-utils.ts
+   └── Fetches and processes Markdown files from:
+       └── src/content/docs/
+```
 
-- **global.css**: Global styles for the project, importing Tailwind CSS.
+**Explanation:**
+- **`src/lib/content-utils.ts`**: Contains utility functions for reading and parsing Markdown files. It uses the `gray-matter` library to extract frontmatter metadata and content from the files.
+- **`src/content/docs/`**: Stores the Markdown files that are dynamically rendered on the site.
 
-## File Interactions
+**Visual Representation:**
+```
+content-utils.ts
+└── Reads Markdown Files
+    └── src/content/docs/
+        ├── actor-network-theory.md
+        ├── ...other docs...
+```
 
-1. **Layouts and Pages**:
-   - Pages like `index.astro` and `test.astro` use `Layout.astro` to provide a consistent structure.
-   - Components like `Welcome.astro` are included within pages to add reusable UI elements.
-
-2. **Content and Utilities**:
-   - Markdown files in the `content` folder are processed by `content-utils.ts` to extract metadata and content.
-   - The `getAllPosts()` function can be used to fetch all posts for dynamic rendering.
-
-3. **Styling**:
-   - Tailwind CSS is configured in `tailwind.config.js` and imported globally via `global.css`.
+---
 
 ## Editing Guide
 
 - **To Add a New Page**:
-  1. Create a new `.astro` file in the `pages` folder.
+  1. Create a new `.astro` file in the `src/pages` folder.
   2. Use `Layout.astro` for consistent structure.
+
+- **To Add a New Game**:
+  1. Add the game files to a new folder in `public/bits`.
+  2. Update `src/pages/games.astro` to include a link to the new game.
+
+- **To Add New Documentation**:
+  1. Add a new Markdown file in `src/content/docs`.
+  2. Access it dynamically via `/docs/<slug>`.
 
 - **To Add a New Component**:
   1. Create a new `.astro` file in the `components` folder.
   2. Import and use the component in pages or layouts as needed.
 
 - **To Add New Content**:
-  1. Add a new Markdown file in the `content` folder.
-  2. Use `content-utils.ts` to fetch and display the content dynamically.
+  1. Add a new Markdown file in the `content/docs` folder.
+  2. Access it dynamically via `/docs/<slug>`.
 
 - **To Update Global Styles**:
   1. Edit `global.css` to add or modify styles.
@@ -111,6 +175,8 @@ src/
 - **To Configure the Project**:
   1. Update `astro.config.mjs` for Astro-specific settings.
   2. Modify `package.json` to add or update dependencies and scripts.
+
+---
 
 ## Notes
 
