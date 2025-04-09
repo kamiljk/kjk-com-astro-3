@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00+00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00+00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00+00:00'
-scale: micro
-source: Memetics & Antimemetics
-title: Antimemetics
+title: "Antimemetics"
+scale: "micro"
+maturity: "seed"
+source: "Memetics & Antimemetics"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Antimemetics
-
 **Definition:**  
 Ideas that resist replication or cognition, functioning as blind spots in perception or memory through active self-erasing properties.
 

@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: "Gilles Deleuze & F\xE9lix Guattari, A Thousand Plateaus (1980)"
-title: Deterritorialization
+title: "Deterritorialization"
+scale: "micro"
+maturity: "seed"
+source: "Assemblages & Rhizomes"
+created: "2025-03-21"
+last_tended: "2025-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Deterritorialization
-
 **Definition:**  
-The process by which social, cultural, or political practices are lifted from their original contexts and reconfigured in new spaces, creating liminal zones of meaning and power.
+The process by which assemblages break free from established structures or territories, destabilizing fixed meanings or organizations.
 
 **Key Attributes:**  
-- **Displacement:** Removes practices from their traditional or expected settings  
-- **Reconfiguration:** Adapts and transforms practices in new contexts  
-- **Liminality:** Operates in transitional spaces where old and new meanings coexist
+- **Liberation from Structure:** Releases components from rigid organization  
+- **Disruptive Force:** Challenges established patterns and expectations  
+- **Precursor to Reterritorialization:** Often followed by reconfiguration into new forms

@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Michel Foucault, Power/Knowledge (1980)
-title: Regimes-of-truth
+title: "Regimes of Truth"
+scale: "micro"
+maturity: "seed"
+source: "Truth(s)"
+created: "2025-03-21"
+last_tended: "2025-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Regimes-of-truth
-
 **Definition:**  
-Systems of discourse and power that determine what is accepted as true within a given society, shaping knowledge, behavior, and social norms.
+Foucault's concept describing how societies establish and maintain what counts as truth through power, discourse, and institutional authority.
 
 **Key Attributes:**  
-- **Power-Knowledge Nexus:** Truth is produced and maintained through power relations  
-- **Historical Contingency:** Truth regimes evolve with shifts in social and political contexts  
-- **Exclusion Mechanisms:** Marginalizes alternative perspectives and knowledge systems
+- **Power-Knowledge Nexus:** Truth is produced through power relations  
+- **Discursive Control:** Regulates who can speak with authority and what can be said  
+- **Historical Contingency:** Changes across different epochs and epistemes

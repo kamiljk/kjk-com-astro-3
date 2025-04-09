@@ -1,5 +1,4 @@
 ---
-<<<<<<< HEAD
 import { getEntryBySlug } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 
@@ -22,48 +21,4 @@ if (!doc) {
     </p>
     <div>{doc.Content()}</div>
   </article>
-=======
-import { getEntry } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-
-console.log("[slug].astro: Starting execution");
-
-const { slug } = Astro.params as { slug: string };
-console.log("[slug].astro: Received slug", slug);
-
-interface DocEntry {
-  id: string;
-  render: () => Promise<{
-    Content: any;
-    data: { title: string; pubDate: string };
-  }>;
-  slug: string;
-  body: string;
-  collection: "docs";
-  data: { title: string; pubDate: string };
-}
-
-const doc = (await getEntry("docs", slug)) as DocEntry | undefined;
-console.log("[slug].astro: Retrieved doc", doc);
-
-if (!doc) {
-  console.error("[slug].astro: Document not found");
-  throw new Error(`Document with slug '${slug}' not found.`);
-}
-
-const { Content, data } = await doc.render();
-console.log("[slug].astro: Rendered content", { data });
----
-
-<Layout>
-  <div>
-    <article class="prose mx-auto">
-      <h1>{data.title}</h1>
-      <p class="text-gray-500">
-        {new Date(data.pubDate).toLocaleDateString()}
-      </p>
-      <div>{Content()}</div>
-    </article>
-  </div>
->>>>>>> 477fb62 (Add initial definitions for various concepts related to liminality and social dynamics)
 </Layout>

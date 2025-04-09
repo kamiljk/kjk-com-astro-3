@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Bruno Latour, Reassembling the Social (2005)
-title: Spectrum-of-agency
+title: "Spectrum of Agency"
+scale: "micro"
+maturity: "seed"
+source: "Bruno Latour, Reassembling the Social (2005)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Spectrum-of-agency
-
 **Definition:**  
 The spectrum of agency conceptualizes the capacity to act, choose, or influence outcomes as a dynamic continuum rather than a binary state, operating within liminal spaces between control and autonomy.
 

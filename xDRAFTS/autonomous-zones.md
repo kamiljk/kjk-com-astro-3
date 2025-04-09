@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00+00:00'
-epistemic_status: Initial capture.
-fmContentType: definition
-last_tended: '2023-03-21T00:00:00+00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00+00:00'
-scale: micro
-source: 'Hakim Bey, TAZ: Temporary Autonomous Zone (1991)'
-title: Autonomous-zones
+title: "Autonomous Zones"
+scale: "micro"
+maturity: "seed"
+source: "Hakim Bey, TAZ: Temporary Autonomous Zone (1991)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Autonomous-zones
-
 **Definition:**  
 Autonomous zones are spaces that exist outside or in defiance of state control, economic structures, and dominant social orders where alternative ways of organizing power, labor, and life emerge.
 

@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Digital Spaces
-title: Digital-liminality
+title: "Digital Liminality"
+scale: "micro"
+maturity: "seed"
+source: "Nathan Jurgenson, The Social Photo: On Photography and Social Media (2019)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Digital-liminality
-
 **Definition:**  
-The experience of existing in transitional digital spaces, such as loading screens, virtual lobbies, or online forums, where users navigate between states of presence and absence.
+Digital liminality refers to the threshold experiences and in-between states that occur in virtual environments, where identity, community, and space exist between material reality and algorithmic construction.
 
 **Key Attributes:**  
-- **Transitional Spaces:** Digital environments that mediate between active states  
-- **Temporal Ambiguity:** Blurs distinctions between waiting and engaging  
-- **Community Formation:** Fosters ephemeral connections in shared virtual thresholds
+- **Virtual Presence:** Digital spaces create unique states of being present-but-absent, enabling simultaneous existence in multiple contexts and communities.  
+- **Identity Fluidity:** Online personas allow for experimentation with identity performance unconstrained by physical embodiment or consistent presentation.  
+- **Code/Culture Interface:** The intersection of technical infrastructure and cultural practice creates new forms of social organization, governance, and expression.

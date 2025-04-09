@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: definition
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: "Jacques Ranci\xE8re, Disagreement: Politics and Philosophy (1999)"
-title: Consensus & Dissensus
+title: "Consensus & Dissensus"
+scale: "micro"
+maturity: "seed"
+source: "Jacques Rancière, Disagreement: Politics and Philosophy (1999)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Consensus & Dissensus
-
 **Definition:**  
 Consensus and dissensus represent dynamic interplay within liminal spaces, where collective agreement on norms, values, or truth conditions confronts disruption and alternative logics.
 

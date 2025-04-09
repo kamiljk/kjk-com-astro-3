@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Political Theory
-title: Political-parties
+title: "Political Parties"
+scale: "micro"
+maturity: "seed"
+source: "Robert Michels, Political Parties: A Sociological Study of the Oligarchical Tendencies of Modern Democracy (1911)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Political-parties
-
 **Definition:**  
-Organizations that aggregate and represent political interests, operating in the liminal space between individual citizens and state power.
+Political parties exist in a liminal state between institutions of governance and autonomous actors, mediating between state power and public sentiment as both gatekeepers and conduits of political transformation.
 
 **Key Attributes:**  
-- **Interest Aggregation:** Combines diverse perspectives into coherent platforms  
-- **Power Mediation:** Acts as intermediaries between the public and government institutions  
-- **Dynamic Evolution:** Adapts to shifting political, social, and cultural landscapes
+- **Structure vs. Fluidity:** Parties oscillate between rigid bureaucratic organization and flux (coalition-building, policy shifts, populist reorientations).  
+- **Identity Formation:** Party ideology functions as a constructed, evolving narrative that shapes both internal cohesion and external perception.  
+- **Boundary Work:** Parties constantly negotiate inclusion/exclusion of members, factions, and dissidents, defining the limits of acceptable political discourse.

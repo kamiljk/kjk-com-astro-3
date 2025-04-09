@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Game Theory
-title: Meta Game Theory
+title: "Meta Game Theory"
+scale: "micro"
+maturity: "seed"
+source: "Meta Game Theory"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Meta Game Theory
-
 **Definition:**  
-The study of strategies and decision-making processes that operate above or beyond traditional game theory, focusing on the rules, structures, and contexts that shape interactions.
+The strategic layer of play or decision-making beyond explicit rules, concerning how participants navigate underlying structures and hidden power dynamics.
 
 **Key Attributes:**  
-- **Rule Design:** Examines how rules influence player behavior and outcomes  
-- **Context Awareness:** Considers external factors that impact decision-making  
-- **Iterative Feedback:** Adapts strategies based on evolving game dynamics
+- **Hidden Rules:** Operates in the space between formal and informal rules  
+- **Strategic Power Play:** Manipulates larger forces including alliances, resources, and timing  
+- **Adaptation:** Requires skill in questioning established rules and innovating strategies

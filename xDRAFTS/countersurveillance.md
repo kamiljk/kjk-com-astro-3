@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Surveillance Studies
-title: Countersurveillance
+title: "Countersurveillance"
+scale: "micro"
+maturity: "seed"
+source: "Gary T. Marx, Undercover: Police Surveillance in America (1988)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Countersurveillance
-
 **Definition:**  
-The practice of evading, disrupting, or subverting surveillance systems, often operating in the liminal space between visibility and invisibility.
+Countersurveillance encompasses tactics that disrupt the enforced visibility of individuals by power structures through obfuscation, camouflage, and subversion, creating liminal states between visibility and disappearance.
 
 **Key Attributes:**  
-- **Evasion Tactics:** Employs methods to avoid detection or tracking  
-- **Technological Adaptation:** Leverages tools to counteract surveillance technologies  
-- **Empowerment:** Reclaims agency in environments dominated by surveillance
+- **Face & Gait Obfuscation:** Techniques that confuse biometric tracking via masks, adversarial clothing, and movement disruption, rendering AI-driven surveillance ineffective.  
+- **Digital Anonymity:** Using VPNs, Tor, burner phones, and encryption to erase digital footprints, operating in the liminal space between identity and disinformation.  
+- **Behavioral Camouflage:** Strategic adaptation of neutral clothing, pattern avoidance, and crowd-blending to exist between presence and indistinctiveness.

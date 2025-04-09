@@ -1,17 +1,12 @@
 ---
-title: Bouba-kiki-effect
+title: "Bouba-Kiki Effect"
 scale: "micro"
 maturity: "seed"
 source: "Bouba & Kiki"
-created: "2023-03-21T00:00:00Z"
-last_tended: "2023-03-21T00:00:00Z"
+created: "2023-03-21"
+last_tended: "2023-03-21"
 epistemic_status: "Initial capture."
-fmContentType: "definition"
-pubDate: "2023-03-21T00:00:00Z"
 ---
-
-# Bouba-kiki-effect
-
 **Definition:**  
 The psychological phenomenon where individuals consistently associate certain sounds with specific visual shapes, suggesting inherent cross-modal correspondences in human perception.
 

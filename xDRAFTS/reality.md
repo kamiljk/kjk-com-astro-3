@@ -1,21 +1,16 @@
 ---
-created: 2023-03-21T00:00:00
-pubDate: 2023-03-21T00:00:00
-last_tended: 2023-03-21T00:00:00
-epistemic_status: Initial capture.
-fmContentType: definition
-maturity: seed
-scale: micro
-source: Reality
-title: Reality
+title: "Reality"
+scale: "micro"
+maturity: "seed"
+source: "Jean Baudrillard, Simulacra and Simulation (1981)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Reality
-
 **Definition:**  
-The state of things as they actually exist, often contrasted with perception, imagination, or illusion, and shaped by the interplay of objective and subjective factors.
+In the context of liminality, reality is not a fixed or objective state but a fluid assemblage of perceptions, truths, and power structures that occupies the threshold between known and unknown, stable and contested.
 
 **Key Attributes:**  
-- **Objective Existence:** Independent of individual perception  
-- **Subjective Interpretation:** Filtered through personal and cultural lenses  
-- **Constructed Nature:** Influenced by social, political, and technological forces
+- **Consensus vs. Dissensus:** Reality exists between collective agreement and competing interpretations, creating zones of contestation.  
+- **Hyperreality:** The postmodern condition blurs distinctions between the simulation and the original, where representations replace direct experience.  
+- **Power-Knowledge Nexus:** What counts as "real" is shaped by dominant knowledge structures and authority, making reality inherently political.

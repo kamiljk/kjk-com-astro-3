@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Jacques Derrida, Specters of Marx (1993)
-title: Hauntology
+title: "Hauntology"
+scale: "micro"
+maturity: "seed"
+source: "Hauntology"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Hauntology
-
 **Definition:**  
-A concept describing the persistence of elements from the past in the present, creating a liminal space where the boundaries between what is and what was become blurred.
+Derrida's concept describing how the past lingers in the present as spectral influence, particularly how unrealized futures continue to shape contemporary culture.
 
 **Key Attributes:**  
-- **Temporal Disruption:** Past, present, and future coexist in spectral form  
-- **Cultural Echoes:** Unresolved histories manifest in contemporary contexts  
-- **Ontological Uncertainty:** Challenges the stability of identity and meaning
+- **Temporal Disruption:** Past and future folded into present experience  
+- **Lost Futures:** Mourning for possibilities that never materialized  
+- **Spectral Presence:** Influence of absent or incomplete narratives

@@ -1,21 +1,18 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Guerrilla Urbanism
-title: Guerrilla-infrastructure
+title: "Guerrilla Infrastructure"
+scale: "micro"
+maturity: "seed"
+source: "Guerilla Networks"
+created: "2025-03-21"
+last_tended: "2025-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Guerrilla-infrastructure
-
 **Definition:**  
-The creation of informal, often unauthorized systems or structures that operate in the liminal spaces between formal governance and grassroots innovation.
+Alternative systems that emerge when official institutions fail or refuse to serve populations, operating in liminal spaces between legality and illegality.
 
 **Key Attributes:**  
-- **Improvised Solutions:** Addresses gaps in official infrastructure  
-- **Community-Driven:** Emerges from local needs and collective action  
-- **Adaptive Resilience:** Evolves to meet changing conditions and challenges
+- **Parallel Systems:** Functions alongside or beneath official structures  
+- **Need-Based Emergence:** Arises from survival necessity rather than formal planning  
+- **Adaptive Resilience:** Evolves rapidly in response to changing conditions
+
+

@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Hans-Georg Gadamer, Truth and Method (1960)
-title: Hermeneutics
+title: "Hermeneutics"
+scale: "micro"
+maturity: "seed"
+source: "Hermeneutics"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Hermeneutics
-
 **Definition:**  
-The study and practice of interpretation, particularly of texts, operating in the liminal space between authorial intent, textual meaning, and reader understanding.
+The interpretive practice of meaning-making at thresholds between understanding and misunderstanding, examining how interpretation itself produces liminal conditions.
 
 **Key Attributes:**  
-- **Dialogical Process:** Interpretation as a conversation between text and reader  
-- **Historical Context:** Meaning shaped by the temporal and cultural horizon of both text and interpreter  
-- **Fusion of Horizons:** The merging of different perspectives to create new understanding
+- **Circularity:** Understanding operates through cycles of context and detail  
+- **Historicity:** Interpretation always occurs within temporal and cultural situations  
+- **Contestedness:** Acknowledges competing interpretations as inevitable

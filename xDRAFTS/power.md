@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Michel Foucault, Discipline and Punish (1975)
-title: Power
+title: "Power"
+scale: "micro"
+maturity: "seed"
+source: "Michel Foucault, Power/Knowledge (1980)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Power
-
 **Definition:**  
-The ability to influence or control the behavior of others, often operating in the liminal space between coercion and consent, visibility and invisibility.
+Power is not a possession but a relation, circulating through networks of discourse, institutions, and practices that shape behavior, knowledge, and subjectivity.
 
 **Key Attributes:**  
-- **Relational Dynamics:** Power exists within relationships, not as a fixed entity  
-- **Disciplinary Mechanisms:** Shapes behavior through norms, surveillance, and institutions  
-- **Resistance Potential:** Power always generates the possibility of resistance
+- **Productive Force:** Power doesn't just repress; it produces reality, domains of objects, and rituals of truth through knowledge systems.  
+- **Capillary Nature:** Power functions not only from top-down authority but through diffuse, everyday interactions, creating self-regulating subjects.  
+- **Resistance:** Where power exists, resistance necessarily co-exists as an inseparable counterpart, operating in the same network of relations.

@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Adam Curtis, HyperNormalisation (2016)
-title: Hypernormalization
+title: "Hypernormalization"
+scale: "micro"
+maturity: "seed"
+source: "Hypernormalization"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Hypernormalization
-
 **Definition:**  
-A condition in which systems of power create a false reality that is accepted as normal, even though it is widely recognized as artificial and unsustainable.
+A paradoxical state where a system becomes so saturated with contradictions that both authorities and citizens participate in its artificial reality despite knowing it's false.
 
 **Key Attributes:**  
-- **Simulated Normalcy:** Maintains the illusion of stability despite underlying dysfunction  
-- **Cognitive Dissonance:** Individuals navigate the gap between perceived and actual reality  
-- **Systemic Entrapment:** Limits the ability to imagine or enact alternatives
+- **Collective Pretense:** Widespread acknowledgment of falsehood alongside continued participation  
+- **Simulated Reality:** Official narratives diverge increasingly from lived experience  
+- **Inertial Stability:** Perpetuates itself through resignation rather than belief

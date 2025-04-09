@@ -1,18 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: ''
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: 'Mahzarin Banaji & Anthony Greenwald, Blindspot: Hidden Biases of Good People
-  (2013)'
-title: Bias
+title: "Bias"
+scale: "micro"
+maturity: "seed"
+source: "Mahzarin Banaji & Anthony Greenwald, Blindspot: Hidden Biases of Good People (2013)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Bias
-
 **Definition:**  
 Biases act as invisible forces that guide perception, reinforce or disrupt established truths, functioning as boundary mechanisms determining what is sayable, thinkable, or acceptable within contexts.
 

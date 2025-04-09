@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Jean Baudrillard, Simulacra and Simulation (1981)
-title: Simulacra
+title: "Simulacra"
+scale: "micro"
+maturity: "seed"
+source: "Simulacra & Simulacrum"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Simulacra
-
 **Definition:**  
-Representations or imitations of reality that replace or distort the original, creating a hyperreality where distinctions between real and simulated blur.
+Baudrillard's concept of representations that no longer refer to any reality but form self-contained systems of signs creating hyperreality.
 
 **Key Attributes:**  
-- **Hyperreality:** Simulacra become more real than reality itself  
-- **Loss of Authenticity:** Original meanings and contexts are obscured  
-- **Cultural Dominance:** Shapes perceptions and behaviors in contemporary society
+- **Progressive Detachment:** Evolves from reflecting reality to masking reality's absence  
+- **Self-Referential System:** Signs refer only to other signs rather than external reality  
+- **Hyperreality:** Creates an experience more compelling than the original it replaces

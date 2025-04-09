@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Identity Theory
-title: Identity-negotiation
+title: "Identity Negotiation"
+scale: "micro"
+maturity: "seed"
+source: "Identity Negotiation"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Identity-negotiation
-
 **Definition:**  
-The process by which individuals navigate and reconcile multiple aspects of their identity in response to social, cultural, and personal contexts.
+The dynamic process through which individuals or groups define, redefine, and adapt their sense of self within shifting contexts.
 
 **Key Attributes:**  
-- **Contextual Adaptation:** Adjusts identity expression based on situational demands  
-- **Intersectionality:** Balances overlapping and sometimes conflicting identity categories  
-- **Dynamic Process:** Continuously evolves through interaction and self-reflection
+- **Fluidity and Uncertainty:** Involves tension between past self-concepts and emerging possibilities  
+- **Social Construction:** Identity formed through interactions with norms, groups, and institutions  
+- **Agency vs. Constraint:** Balance between self-definition and external limiting factors

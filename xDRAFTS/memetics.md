@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Richard Dawkins, The Selfish Gene (1976)
-title: Memetics
+title: "Memetics"
+scale: "micro"
+maturity: "seed"
+source: "Memetics & Antimemetics"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Memetics
-
 **Definition:**  
-The study of memes as units of cultural transmission, exploring how ideas, behaviors, and symbols replicate and evolve within societies.
+The study of how ideas propagate and evolve through cultural transmission, treating cultural units (memes) as self-replicating entities similar to genes.
 
 **Key Attributes:**  
-- **Replication:** Memes spread through imitation and communication  
-- **Variation:** Memes adapt and change as they are transmitted  
-- **Selection:** Memes compete for attention and retention within cultural ecosystems
+- **Replication & Mutation:** Ideas spread while adapting to environments  
+- **Selection Pressures:** Some memes outcompete others for attention and adoption  
+- **Virality:** Capacity to spread rapidly through networks and media

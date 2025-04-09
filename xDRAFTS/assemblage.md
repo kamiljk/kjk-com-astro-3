@@ -1,17 +1,12 @@
 ---
-created: '2025-03-21T00:00:00+00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2025-03-21T00:00:00+00:00'
-maturity: seed
-pubDate: '2025-03-21T00:00:00+00:00'
-scale: micro
-source: Assemblages & Rhizomes
-title: Assemblage
+title: "Assemblage"
+scale: "micro"
+maturity: "seed"
+source: "Assemblages & Rhizomes"
+created: "2025-03-21"
+last_tended: "2025-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Assemblage
-
 **Definition:**  
 A configuration of heterogeneous elements that function together as a provisional whole while maintaining their autonomy and potential for reconfiguration.
 

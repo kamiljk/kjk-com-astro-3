@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Michel Foucault, Of Other Spaces (1967)
-title: Heterotopia
+title: "Heterotopia"
+scale: "micro"
+maturity: "seed"
+source: "Michel Foucault, Of Other Spaces (1967)"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Heterotopia
-
 **Definition:**  
 Heterotopias are real places that function as "counter-sites" or "effectively enacted utopias" where other social spaces are simultaneously represented, contested, and inverted.
 

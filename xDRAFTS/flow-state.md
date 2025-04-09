@@ -1,21 +1,16 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: 'Mihaly Csikszentmihalyi, Flow: The Psychology of Optimal Experience (1990)'
-title: Flow-state
+title: "Flow State"
+scale: "micro"
+maturity: "seed"
+source: "Flow"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Flow-state
-
 **Definition:**  
-A mental state of complete absorption and focus, where individuals lose a sense of time and self, existing in the liminal space between effort and ease.
+A mental state of complete absorption and engagement where action and awareness merge, time perception warps, and self-consciousness recedes.
 
 **Key Attributes:**  
-- **Effortless Engagement:** Tasks feel intrinsically rewarding and seamless  
-- **Temporal Distortion:** Time appears to slow down or speed up  
-- **Optimal Challenge:** Balances skill level with task difficulty to sustain focus
+- **Challenge-Skill Balance:** Requires activities that push skill limits without overwhelming  
+- **Autotelic Experience:** Intrinsically rewarding regardless of external outcomes  
+- **Cognitive Boundary Dissolution:** Merges action and awareness into unified experience

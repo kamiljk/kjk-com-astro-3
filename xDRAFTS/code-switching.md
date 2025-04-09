@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: 'definition'
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Code-Switching
-title: Code-switching
+title: "Code-Switching"
+scale: "micro"
+maturity: "seed"
+source: "Code-Switching"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Code-switching
-
 **Definition:**  
 The practice of alternating between different linguistic, cultural, or social codes depending on context and audience.
 

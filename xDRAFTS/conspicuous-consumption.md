@@ -1,17 +1,12 @@
 ---
-created: '2023-03-21T00:00:00'
-epistemic_status: Initial capture.
-fmContentType: definition
-last_tended: '2023-03-21T00:00:00'
-maturity: seed
-pubDate: '2023-03-21T00:00:00'
-scale: micro
-source: Thorstein Veblen, The Theory of the Leisure Class (1899)
-title: Conspicuous-consumption
+title: "Conspicuous Consumption"
+scale: "micro"
+maturity: "seed"
+source: "Conspicuous Consumption"
+created: "2023-03-21"
+last_tended: "2023-03-21"
+epistemic_status: "Initial capture."
 ---
-
-# Conspicuous Consumption
-
 **Definition:**  
 The practice of purchasing goods not for their intrinsic value but to signal social status or identity, functioning as a tool for negotiating thresholds between social strata.
 
