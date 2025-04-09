@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chaos Pendulum</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+</head>
+<body>
+  <script>
+  /*
+   * Chaos Pendulum – p5.js
+   * A self-contained demo of a perpetual chaotic double pendulum.
+   * Paste this into an .html file and open in your browser.
+   */
+  let r1 = 125; // length of first arm
+  let r2 = 125; // length of second arm
+  let r3 = 100; // length of third arm
+  let m1 = 10;  // mass of first pendulum
+  let m2 = 10;  // mass of second pendulum
+  let m3 = 8;   // mass of third pendulum
+  let a1, a2, a3;   // angles
+  let a1_v = 0; // angular velocity
+  let a2_v = 0;
+  let a3_v = 0;
+
+  let g = 1; // gravity
+  let trail;
+  let mycelium;
+
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    pixelDensity(1);
+    a1 = PI / 2;
+    a2 = PI / 2;
+    a3 = PI / 2;
+    trail = createGraphics(windowWidth, windowHeight);
+    trail.background(245);
+    trail.strokeWeight(1.5);
+    mycelium = createGraphics(windowWidth, windowHeight);
+    mycelium.clear();
+    background(245);
+    frameRate(60);
+  }
+
+  function draw() {
+    background(220); // light grey outer background
+    noStroke();
+    fill(255);
+    ellipse(width / 2, height / 2, min(width, height) - 100); // white circular canvas
+    image(mycelium, 0, 0);
+    image(trail, 0, 0);
+    // Translate origin to center after drawing the trail
+    translate(width / 2, height / 2);
+
+    // Physics from Lagrange equations
+    let num1 = -g * (2 * m1 + m2) * sin(a1);
+    let num2 = -m2 * g * sin(a1 - 2 * a2);
+    let num3 = -2 * sin(a1 - a2) * m2;
+    let num4 = a2_v * a2_v * r2 + a1_v * a1_v * r1 * cos(a1 - a2);
+    let den = r1 * (2 * m1 + m2 - m2 * cos(2 * a1 - 2 * a2));
+    let a1_a = (num1 + num2 + num3 * num4) / den;
+
+    num1 = 2 * sin(a1 - a2);
+    num2 = (a1_v * a1_v * r1 * (m1 + m2));
+    num3 = g * (m1 + m2) * cos(a1);
+    num4 = a2_v * a2_v * r2 * m2 * cos(a1 - a2);
+    den = r2 * (2 * m1 + m2 - m2 * cos(2 * a1 - 2 * a2));
+    let a2_a = (num1 * (num2 + num3 + num4)) / den;
+
+    // Update velocities and angles
+    a1_v += a1_a;
+    a2_v += a2_a;
+    a1 += a1_v;
+    a2 += a2_v;
+
+    // Convert to cartesian
+    let x1 = r1 * sin(a1);
+    let y1 = r1 * cos(a1);
+    let x2 = x1 + r2 * sin(a2);
+    let y2 = y1 + r2 * cos(a2);
+
+    // Third arm dynamics (simplified estimate)
+    let a3_a = -0.01 * sin(a3 - a2) + 0.002 * a2_v;
+    a3_v += a3_a;
+    a3 += a3_v;
+
+    let x3 = x2 + r3 * sin(a3);
+    let y3 = y2 + r3 * cos(a3);
+
+    // Replace the repulsion logic with a tanh-based "vibe field"
+    let pendulumTip = createVector(x3 + width / 2, y3 + height / 2);
+    let mousePos = createVector(mouseX, mouseY);
+    let diff = p5.Vector.sub(pendulumTip, mousePos);
+    let distance = constrain(diff.mag(), 1, 200);
+    let vibe = Math.tanh(2 / distance); // smoother falloff
+    let force = diff.normalize().mult(vibe * 0.2);
+    force.limit(0.05); // cap to prevent instability
+    a2_v += force.x; // apply x-axis force only to angular velocity
+
+    // Draw
+    stroke(0);
+    strokeWeight(3);
+    fill(0);
+    line(0, 0, x1, y1);
+    ellipse(x1, y1, m1, m1);
+    line(x1, y1, x2, y2);
+    ellipse(x2, y2, m2, m2);
+    line(x2, y2, x3, y3);
+    ellipse(x3, y3, m3, m3);
+
+    for (let i = 1; i < 3; i++) {
+      let angleOffset = TWO_PI / 3 * i;
+      let cosA = cos(angleOffset);
+      let sinA = sin(angleOffset);
+ 
+      // Rotate and draw to canvas
+      push();
+      rotate(angleOffset);
+      line(0, 0, x1, y1);
+      ellipse(x1, y1, m1, m1);
+      line(x1, y1, x2, y2);
+      ellipse(x2, y2, m2, m2);
+      line(x2, y2, x3, y3);
+      ellipse(x3, y3, m3, m3);
+      pop();
+ 
+      // Manually rotate coordinates and draw trail
+      let rx1 = x1 * cosA - y1 * sinA;
+      let ry1 = x1 * sinA + y1 * cosA;
+      let rx2 = x2 * cosA - y2 * sinA;
+      let ry2 = x2 * sinA + y2 * cosA;
+      let rx3 = x3 * cosA - y3 * sinA;
+      let ry3 = x3 * sinA + y3 * cosA;
+ 
+      trail.stroke(0, 30);
+      trail.line(rx1 + width/2, ry1 + height/2, rx2 + width/2, ry2 + height/2);
+      trail.line(rx2 + width/2, ry2 + height/2, rx3 + width/2, ry3 + height/2);
+    }
+
+    // Update trail for mirrored path
+    trail.stroke(0, 30);
+    trail.line(x1 + width/2, y1 + height/2, x2 + width/2, y2 + height/2);
+    trail.line(x2 + width/2, y2 + height/2, x3 + width/2, y3 + height/2);
+
+    // Random drip effect
+    if (frameCount % 2 === 0) {
+      let dripX = x3 + width / 2 + random(-2, 2);
+      let dripY = y3 + height / 2 + random(-2, 2);
+      if (random() < 0.2) {
+        trail.set(dripX, dripY + 1, color(0, 20));
+        trail.set(dripX, dripY + 2, color(0, 15));
+      }
+    }
+
+    // Occasionally seed and grow a mycelium node
+    if (random() < 0.05) {
+      let sx = floor(x3 + width / 2);
+      let sy = floor(y3 + height / 2);
+      if (brightness(trail.get(sx, sy)) < 50) {
+        mycelium.stroke(100, 10);
+        mycelium.point(sx + floor(random(-1, 2)), sy + floor(random(1, 3)));
+      }
+    }
+
+    // Damping
+    a1_v *= 0.999;
+    a2_v *= 0.999;
+    a3_v *= 0.999;
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    trail.resizeCanvas(windowWidth, windowHeight);
+    mycelium.resizeCanvas(windowWidth, windowHeight);
+    trail.background(245);
+    mycelium.clear();
+  }
+  </script>
+</body>
+</html>

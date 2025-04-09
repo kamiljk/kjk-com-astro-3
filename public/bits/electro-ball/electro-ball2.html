@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Refined Orb // v2 - Enhanced Haptics</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000000; /* Pure black */
+            color: #e0e0e0; /* Light gray text default */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* System font stack */
+            touch-action: none;
+            cursor: crosshair;
+        }
+        canvas {
+            display: block;
+        }
+        /* Cleaner, iOS-inspired back button */
+        #backButton {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 24px; /* Adjusted size */
+            font-weight: 400; /* Regular weight */
+            color: rgba(220, 220, 220, 0.8); /* Lighter, slightly transparent */
+            background-color: rgba(50, 50, 50, 0.3); /* Subtle background */
+            border: none;
+            border-radius: 50%; /* Circle */
+            width: 36px; /* Fixed size */
+            height: 36px; /* Fixed size */
+            line-height: 36px; /* Center symbol vertically */
+            text-align: center; /* Center symbol horizontally */
+            cursor: pointer;
+            z-index: 1000;
+            padding: 0;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            /* Note: Actual Swift UI elements cannot be used in HTML/JS */
+        }
+        #backButton:hover {
+            background-color: rgba(80, 80, 80, 0.5);
+            color: rgba(255, 255, 255, 1);
+        }
+        #backButton:active {
+             background-color: rgba(100, 100, 100, 0.6);
+        }
+        /* Debug Console for Mobile Issues */
+        #debugConsole {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px; /* Slightly larger for better readability */
+            color: rgba(200, 200, 200, 0.9); /* Brighter for better visibility */
+            background-color: rgba(0, 0, 0, 0.7); /* More opaque background */
+            padding: 5px 8px;
+            border-radius: 5px;
+            max-width: 80%;
+            max-height: 80px; /* Larger viewing area */
+            overflow-y: auto;
+            z-index: 1001; /* Above button */
+            pointer-events: none; /* Don't interfere with interactions */
+            font-family: monospace; /* Better for log messages */
+            border: 1px solid rgba(100, 100, 100, 0.3); /* Subtle border */
+        }
+        /* Haptic test button */
+        #hapticTestButton {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(50, 50, 50, 0.3);
+            color: rgba(220, 220, 220, 0.8);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        #hapticTestButton:hover {
+            background-color: rgba(80, 80, 80, 0.5);
+            color: rgba(255, 255, 255, 1);
+        }
+        #hapticTestButton:active {
+            background-color: rgba(100, 100, 100, 0.6);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+</head>
+<body>
+    <button id="backButton" onclick="goBack()" aria-label="Go Back">&#x2190;</button>
+    <div id="debugConsole">Debug Log:<br></div>
+    <script>
+        // --- Configuration ---
+        const SPHERE_RADIUS = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+        const SPHERE_DETAIL = 22;
+        const MOMENTUM_FRICTION = 0.975;
+        const GRAVITY_PULL = 0.00006;
+        const ACCEL_MULTIPLIER = 60;
+        const NOTCH_DISTANCE_DRAG = 12;
+        const NOTCH_DISTANCE_MOMENTUM = 15; // Still used for charging/sound from momentum
+        const CHARGE_DECAY = 0.986;
+        const MAX_CHARGE = 100;
+        const CHARGE_RATE_DRAG = 0.25;
+        const CHARGE_RATE_FAST_DRAG_MULT = 1.6;
+        const CHARGE_RATE_MOMENTUM = 8;
+        const BIG_DISCHARGE_MIN_INTERVAL = 2200;
+        const HEARTBEAT_RATE = 0.8;
+        const MAX_GLOW_BLUR = 35;
+        const JITTER_INTENSITY = 0.004;
+        const STAR_COUNT = 150;
+        const DRAG_MOMENTUM_FACTOR = 0.08;
+
+        // --- Enhanced Haptic Configuration ---
+        const HAPTIC_CONFIG = {
+            // Vibration durations in milliseconds
+            CLICK: {
+                duration: 15,         // Slightly longer for better perception
+                cooldown: 80,         // Minimum time between clicks
+                strength: 'light'     // For iOS impact style
+            },
+            MAJOR: {
+                duration: 80,         // Longer duration for major feedback
+                cooldown: 400,        // Longer cooldown for major effects
+                pattern: [20, 30, 60], // Alternative pattern if supported
+                strength: 'medium'    // For iOS impact style
+            },
+            // Global settings
+            ENABLED: true,            // Master switch
+            MIN_INTERVAL: 50,         // Global minimum interval between any haptic
+            LOG_ATTEMPTS: true        // Whether to log attempts
+        };
+
+        // --- State Variables ---
+        let rotX = 0;
+        let rotY = 0;
+        let prevMouseX, prevMouseY;
+        let lastDx = 0, lastDy = 0;
+        let isDragging = false;
+        let momX = 0, momY = 0;
+        let wireframeSphere;
+        let lastInteractionTime = 0;
+        let distanceSinceLastNotch = 0; // Used for drag effects
+        let momentumDistanceSinceLastNotch = 0; // Separate counter for momentum effects
+        let chargeLevel = 0;
+        let discharges = [];
+        let intensityHistory = [];
+        const INTENSITY_HISTORY_MAX = 15;
+        let lastBigDischargeTime = 0;
+        let heartbeatPulse = 0;
+        let accelX = 0, accelY = 0;
+        let isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        let stars = [];
+        let debugConsole;
+
+        // --- Audio Variables ---
+        let audioContext;
+        let masterGain;
+        let audioInitialized = false;
+
+        // --- Haptic State tracking ---
+        const HAPTIC_STATE = {
+            lastTriggerTime: 0,       // Last time any haptic was triggered
+            lastTriggerTypes: {},     // Last time each type was triggered
+            apiSupport: {             // Which APIs are available (determined at runtime)
+                standard: false,      // navigator.vibrate
+                ios: false,           // iOS-specific APIs
+                checked: false        // Whether we've checked for support
+            },
+            userActivated: false,     // Whether user has explicitly activated haptics
+            initPromise: null         // Promise for async initialization
+        };
+
+        // --- Utility ---
+        // Initialize debug console early
+        document.addEventListener('DOMContentLoaded', function() {
+            debugConsole = document.getElementById('debugConsole');
+            logDebug("Page loaded, debug console initialized");
+        });
+
+        function logDebug(message) {
+            if (!debugConsole) {
+                debugConsole = document.getElementById('debugConsole');
+                if (!debugConsole) {
+                    console.warn("Debug console element not found");
+                    return;
+                }
+            }
+            
+            const maxLines = 6; // Show more lines
+            let content = debugConsole.innerHTML.replace('Debug Log:<br>', '');
+            let lines = content.split('<br>');
+            lines.push(`${(performance.now() / 1000).toFixed(1)}s: ${message}`);
+            if (lines.length > maxLines) {
+                lines = lines.slice(lines.length - maxLines);
+            }
+            debugConsole.innerHTML = 'Debug Log:<br>' + lines.join('<br>');
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+            
+            // Also log to console for development
+            console.log(`DEBUG: ${message}`);
+        }
+
+        // --- Setup ---
+        function setup() {
+            createCanvas(windowWidth, windowHeight, WEBGL);
+            noFill();
+            strokeWeight(1.2);
+            
+            // Make sure debugConsole is initialized
+            if (!debugConsole) {
+                debugConsole = document.getElementById('debugConsole');
+            }
+            
+            // Force an immediate log message
+            logDebug("Setup started");
+            
+            wireframeSphere = createWireframeSphere(SPHERE_RADIUS, SPHERE_DETAIL);
+            generateStars();
+
+            logDebug(`Canvas created: ${width}x${height}`);
+            logDebug(`Mobile device: ${isMobile}`);
+
+            let canvas = document.querySelector('canvas');
+            canvas.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+
+            document.body.addEventListener('pointerdown', initHapticSystem, { once: true });
+            document.body.addEventListener('pointerdown', initAudio, { once: true });
+
+            // Add the haptic test button
+            addHapticTestButton();
+
+            if (isMobile && window.DeviceMotionEvent) {
+                logDebug("Adding DeviceMotion listener");
+                window.addEventListener('devicemotion', handleDeviceMotion);
+                momX = random(-0.008, 0.008);
+                momY = random(-0.008, 0.008);
+            } else if (!isMobile) {
+                momX = random(-0.003, 0.003);
+                momY = random(-0.003, 0.003);
+            }
+            
+            // Final setup message
+            logDebug("Setup complete");
+        }
+
+        // --- Haptic System Functions ---
+        async function initHapticSystem() {
+            // Only initialize once
+            if (HAPTIC_STATE.initPromise) return HAPTIC_STATE.initPromise;
+            
+            logDebug("Initializing haptic system");
+            
+            // Mark user activation
+            HAPTIC_STATE.userActivated = true;
+            
+            // Create promise for async initialization
+            HAPTIC_STATE.initPromise = new Promise(async (resolve) => {
+                try {
+                    // Check for standard vibration API
+                    if (window.navigator && window.navigator.vibrate) {
+                        // Test with minimal vibration
+                        const testResult = navigator.vibrate(1);
+                        HAPTIC_STATE.apiSupport.standard = testResult !== false;
+                        logDebug(`Standard vibration API support: ${HAPTIC_STATE.apiSupport.standard}`);
+                    }
+                    
+                    // Check for iOS-specific APIs (experimental)
+                    if (window.navigator) {
+                        // Try different potential iOS haptic APIs
+                        const potentialApis = [
+                            'getHapticFeedback',   // Potential future API
+                            'haptics',             // Another potential API
+                            'performHapticFeedback' // Yet another potential API
+                        ];
+                        
+                        for (const api of potentialApis) {
+                            if (typeof window.navigator[api] === 'function') {
+                                HAPTIC_STATE.apiSupport.ios = true;
+                                logDebug(`iOS haptic API found: ${api}`);
+                                break;
+                            }
+                        }
+                        
+                        // Fall back to checking for iOS-specific events as indirect signal
+                        if (!HAPTIC_STATE.apiSupport.ios) {
+                            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+                            if (isIOS) {
+                                logDebug("iOS detected but no haptic API found. Using fallback approach");
+                            }
+                        }
+                    }
+                    
+                    // Initialize audio context which can help activate haptics on some devices
+                    try {
+                        await initAudio();
+                        logDebug("Audio context initialized as part of haptic setup");
+                    } catch (e) {
+                        logDebug(`Audio init failed during haptic setup: ${e.message}`);
+                    }
+                    
+                    HAPTIC_STATE.apiSupport.checked = true;
+                    logDebug("Haptic system initialization complete");
+                    resolve(true);
+                } catch (e) {
+                    logDebug(`Haptic system initialization error: ${e.message}`);
+                    resolve(false);
+                }
+            });
+            
+            return HAPTIC_STATE.initPromise;
+        }
+
+        async function triggerHaptic(type) {
+            // Skip if haptics are disabled
+            if (!HAPTIC_CONFIG.ENABLED) return false;
+            
+            // Get configuration for this type
+            const config = HAPTIC_CONFIG[type.toUpperCase()];
+            if (!config) {
+                logDebug(`Unknown haptic type: ${type}`);
+                return false;
+            }
+            
+            // Initialize if not already done
+            if (!HAPTIC_STATE.apiSupport.checked) {
+                try {
+                    await initHapticSystem();
+                } catch (e) {
+                    logDebug(`Haptic init error: ${e.message}`);
+                }
+            }
+            
+            // Check timing restrictions
+            const now = performance.now();
+            
+            // Global cooldown check
+            if (now - HAPTIC_STATE.lastTriggerTime < HAPTIC_CONFIG.MIN_INTERVAL) {
+                if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                    logDebug(`Haptic ${type} skipped: too soon after previous haptic`);
+                }
+                return false;
+            }
+            
+            // Type-specific cooldown check
+            if (HAPTIC_STATE.lastTriggerTypes[type] && 
+                now - HAPTIC_STATE.lastTriggerTypes[type] < config.cooldown) {
+                if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                    logDebug(`Haptic ${type} skipped: cooldown not elapsed`);
+                }
+                return false;
+            }
+            
+            // Update timing state before attempting to trigger
+            HAPTIC_STATE.lastTriggerTime = now;
+            HAPTIC_STATE.lastTriggerTypes[type] = now;
+            
+            // Log attempt if configured
+            if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                logDebug(`Attempting Haptic: ${type}`);
+            }
+            
+            // Try triggering the haptic through various APIs
+            let success = false;
+            
+            // 1. Try standard vibration API first if supported
+            if (HAPTIC_STATE.apiSupport.standard) {
+                try {
+                    // Use pattern if provided and it's a major haptic, otherwise use duration
+                    const vibrationParam = (type === 'major' && config.pattern) 
+                        ? config.pattern 
+                        : config.duration;
+                        
+                    const result = navigator.vibrate(vibrationParam);
+                    if (result !== false) {
+                        success = true;
+                        if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                            logDebug(`Standard haptic ${type} triggered`);
+                        }
+                    }
+                } catch (e) {
+                    logDebug(`Standard vibration error: ${e.message}`);
+                }
+            }
+            
+            // 2. Try iOS-specific APIs if available and standard API failed
+            if (!success && HAPTIC_STATE.apiSupport.ios) {
+                try {
+                    // Try different potential iOS API patterns
+                    if (window.navigator.getHapticFeedback) {
+                        const haptic = await window.navigator.getHapticFeedback();
+                        await haptic.impact({ style: config.strength });
+                        success = true;
+                        logDebug(`iOS haptic ${type} (${config.strength}) triggered`);
+                    } 
+                    // Add other iOS-specific APIs here as they become available
+                } catch (e) {
+                    logDebug(`iOS haptic error: ${e.message}`);
+                }
+            }
+            
+            // 3. Audio-based "haptic" fallback for devices without vibration
+            if (!success && audioContext && audioContext.state === 'running') {
+                try {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    const now = audioContext.currentTime;
+                    
+                    // Use very low frequency that might create physical vibration
+                    osc.frequency.setValueAtTime(type === 'major' ? 30 : 50, now);
+                    
+                    // Keep volume very low but not zero
+                    const volume = type === 'major' ? 0.1 : 0.05;
+                    gain.gain.setValueAtTime(volume, now);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + (type === 'major' ? 0.08 : 0.02));
+                    
+                    logDebug(`Audio haptic fallback for ${type}`);
+                    // Don't mark as success since this is a weak fallback
+                } catch (e) {
+                    logDebug(`Audio haptic fallback error: ${e.message}`);
+                }
+            }
+            
+            if (!success && HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                logDebug(`No successful haptic for ${type}`);
+            }
+            
+            return success;
+        }
+
+        function initializeInteraction() {
+            // Initialize haptics system on first interaction
+            initHapticSystem();
+            // Trigger a small haptic to signal beginning of interaction
+            setTimeout(() => triggerHaptic('click'), 10);
+        }
+
+        async function triggerNotchFeedback(intensity, isFastMovement) {
+            // Pre-schedule haptic slightly before visual/audio effects
+            const hapticPromise = triggerHaptic('click');
+            
+            // Small delay before audio for better perception
+            setTimeout(() => {
+                // Play sound but skip its internal haptic call
+                playClickSound(intensity, false);
+            }, 5);
+            
+            return hapticPromise;
+        }
+
+        async function triggerMajorFeedback() {
+            // Trigger haptic feedback first
+            const hapticPromise = triggerHaptic('major');
+            
+            // Slight delay for better perception
+            setTimeout(() => {
+                // Play the discharge sound but skip its internal haptic
+                playMajorDischargeSound(false);
+            }, 10);
+            
+            return hapticPromise;
+        }
+
+        function addHapticTestButton() {
+            const testButton = document.createElement('button');
+            testButton.id = 'hapticTestButton';
+            testButton.textContent = '⚡';
+            testButton.title = 'Test Haptic Feedback';
+            
+            testButton.addEventListener('mousedown', function() {
+                this.style.backgroundColor = 'rgba(100, 100, 100, 0.6)';
+                logDebug("Haptic test button pressed");
+                
+                // Initialize and test haptics
+                initHapticSystem().then(() => {
+                    // Display haptic support status
+                    logDebug(`Haptic support - Standard: ${HAPTIC_STATE.apiSupport.standard}, iOS: ${HAPTIC_STATE.apiSupport.ios}`);
+                    
+                    // Test click haptic
+                    triggerHaptic('click');
+                    
+                    // Test major haptic after a delay
+                    setTimeout(() => triggerHaptic('major'), 500);
+                });
+            });
+            
+            testButton.addEventListener('mouseup', function() {
+                this.style.backgroundColor = 'rgba(80, 80, 80, 0.5)';
+            });
+            
+            testButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = 'rgba(80, 80, 80, 0.5)';
+                this.style.color = 'rgba(255, 255, 255, 1)';
+            });
+            
+            testButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = 'rgba(50, 50, 50, 0.3)';
+                this.style.color = 'rgba(220, 220, 220, 0.8)';
+            });
+            
+            document.body.appendChild(testButton);
+            logDebug("Haptic test button added");
+        }
+
+        // --- Starfield ---
+        function generateStars() {
+            stars = [];
+            let maxDist = max(width, height);
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: random(-width * 1.2, width * 1.2),
+                    y: random(-height * 1.2, height * 1.2),
+                    z: random(-maxDist * 0.8, maxDist * 0.8), // Closer Z range
+                    size: random(0.8, 2.2) // Smaller size range
+                });
+            }
+            logDebug(`Generated ${STAR_COUNT} stars`);
+         }
+        function drawStars() {
+            push();
+            noStroke();
+            // Less pronounced parallax
+            let parallaxX = momY * 200;
+            let parallaxY = momX * 200;
+            translate(parallaxX, parallaxY, -300); // Move stars back less
+
+            for (let star of stars) {
+                // Simpler alpha, less twinkle
+                let alpha = map(abs(star.z), 0, max(width, height) * 0.8, 50, 10); // Alpha based on depth
+                fill(200, 200, 200, alpha); // Simple gray stars
+                push();
+                translate(star.x, star.y, star.z);
+                ellipse(0, 0, star.size, star.size);
+                pop();
+            }
+            pop();
+        }
+
+        // --- Sphere Geometry Creation ---
+        function createWireframeSphere(r, detail) {
+            let sphere = [];
+            for (let i = 0; i < detail; i++) {
+                let lon = map(i, 0, detail, 0, TWO_PI);
+                let lonPoints = [];
+                for (let j = 0; j <= detail; j++) {
+                    let lat = map(j, 0, detail, 0, PI);
+                    let x = r * sin(lat) * cos(lon);
+                    let y = r * sin(lat) * sin(lon);
+                    let z = r * cos(lat);
+                    lonPoints.push(createVector(x, y, z));
+                }
+                sphere.push({ type: 'longitude', points: lonPoints });
+            }
+            for (let j = 1; j < detail; j++) {
+                let lat = map(j, 0, detail, 0, PI);
+                let latPoints = [];
+                for (let i = 0; i <= detail; i++) {
+                    let lon = map(i, 0, detail, 0, TWO_PI);
+                    let x = r * sin(lat) * cos(lon);
+                    let y = r * sin(lat) * sin(lon);
+                    let z = r * cos(lat);
+                    latPoints.push(createVector(x, y, z));
+                }
+                sphere.push({ type: 'latitude', points: latPoints });
+            }
+            logDebug(`Created wireframe sphere with ${sphere.length} lines`);
+            return sphere;
+         }
+
+        // --- Main Draw Loop ---
+        function draw() {
+            background(0);
+            drawStars();
+
+            heartbeatPulse = (sin(frameCount * 0.05 * HEARTBEAT_RATE) + 1) * 0.5;
+            // Subtle lighting
+            ambientLight(60);
+            pointLight(220, 220, 255, 0, 0, SPHERE_RADIUS * 2.5); // Head-on cool light
+            directionalLight(100, 100, 100, 0.5, 0.5, -1); // Gentle fill light
+
+            handleMomentum(); // Handles rotation when not dragging
+
+            chargeLevel = max(0, chargeLevel * CHARGE_DECAY);
+
+            // Random static discharges
+            if (chargeLevel > 15 && random() < 0.012 * (chargeLevel / MAX_CHARGE)) {
+                 createStaticDischarge(0.7 + random(0.5));
+            }
+            checkForMajorDischarge(); // Check happens here, but haptic/sound triggered elsewhere if needed
+
+            push();
+
+            // Apply jitter based on charge level
+            let chargeRatio = chargeLevel / MAX_CHARGE;
+            let jitterX = chargeRatio * JITTER_INTENSITY * (noise(frameCount * 0.5) - 0.5);
+            let jitterY = chargeRatio * JITTER_INTENSITY * (noise(frameCount * 0.5 + 100) - 0.5);
+
+            // Apply rotation (momentum handled in handleMomentum)
+            rotateX(rotY + jitterY);
+            rotateY(rotX + jitterX);
+
+            // Subtle Glow based on charge - using RGBA
+            let glowIntensity = chargeRatio * MAX_GLOW_BLUR * (0.8 + heartbeatPulse * 0.3);
+            let glowAlpha = map(chargeRatio, 0, 1, 0.05, 0.4) * (0.8 + heartbeatPulse * 0.4); // Adjusted alpha range
+
+            // Electric blue glow
+            drawingContext.shadowBlur = glowIntensity;
+            drawingContext.shadowColor = `rgba(150, 180, 255, ${glowAlpha})`;
+
+            drawWireframeSphere(chargeRatio);
+            updateAndDrawDischarges();
+
+            drawingContext.shadowBlur = 0;
+            pop();
+            
+            // Log frame rate occasionally
+            if (frameCount % 300 === 0) {
+                logDebug(`FPS: ${frameRate().toFixed(1)}, Charge: ${chargeLevel.toFixed(1)}`);
+            }
+         }
+
+        // --- Momentum Handling --- (No haptics triggered here)
+        function handleMomentum() {
+            if (!isDragging) {
+                // Apply accelerometer/gravity influence
+                if (isMobile) {
+                    momX += accelY * GRAVITY_PULL * ACCEL_MULTIPLIER;
+                    momY += accelX * GRAVITY_PULL * ACCEL_MULTIPLIER;
+                } else {
+                    momY += GRAVITY_PULL;
+                }
+
+                rotX += momX;
+                rotY += momY;
+
+                momX *= MOMENTUM_FRICTION;
+                momY *= MOMENTUM_FRICTION;
+
+                // Trigger sound/charge effects based on momentum (NO HAPTICS from passive movement)
+                let movement = sqrt(momX * momX + momY * momY);
+                if (abs(momX) > 0.0001 || abs(momY) > 0.0001) {
+                    momentumDistanceSinceLastNotch += movement * SPHERE_RADIUS * 0.6; // Use separate counter
+
+                    let chargeAddMomentum = constrain(movement * CHARGE_RATE_MOMENTUM, 0, 1.5);
+                    chargeLevel = min(MAX_CHARGE, chargeLevel + chargeAddMomentum);
+
+                    if (momentumDistanceSinceLastNotch > NOTCH_DISTANCE_MOMENTUM) {
+                        let intensity = constrain(movement * 180, 0.05, 0.7);
+                        // Play sound ONLY, no haptic from passive momentum
+                        playClickSound(intensity * 1.1, false); // Pass false to skip haptic
+                        updateIntensityHistory(intensity); // Still track intensity if needed
+
+                        let staticProb = map(chargeLevel, 0, MAX_CHARGE, 0.1, 0.4) * map(intensity, 0.05, 0.7, 0.5, 1.2);
+                        if (random() < staticProb) {
+                            createStaticDischarge();
+                        }
+                        momentumDistanceSinceLastNotch = 0;
+                    }
+                }
+            } else {
+                 if (intensityHistory.length > 0 && frameCount % 10 === 0) {
+                    intensityHistory.shift();
+                }
+            }
+        }
+
+        // --- Device Motion Handling --- (No haptics triggered here)
+        function handleDeviceMotion(event) {
+            if (event.accelerationIncludingGravity) {
+                accelX = event.accelerationIncludingGravity.x / 10;
+                accelY = event.accelerationIncludingGravity.y / 10;
+                 // NO haptic trigger here - unlikely to work on iOS
+            } else {
+                 logDebug("No accelerationIncludingGravity data");
+            }
+        }
+
+        // --- Drawing Functions ---
+        function drawWireframeSphere(chargeRatio) {
+            // Base color: Light gray, pulsing slightly
+            let baseGray = 180 + heartbeatPulse * 20;
+            // Charge color: Adds blue tint and brightness
+            let chargeBoost = chargeRatio * chargeRatio * 75; // Non-linear boost
+
+            let r = baseGray;
+            let g = baseGray + chargeBoost * 0.5; // Less green boost
+            let b = baseGray + chargeBoost;       // More blue boost
+            let alpha = 200 + chargeBoost * 0.5; // Slightly increase alpha with charge
+
+            // No vertex displacement for cleaner look
+            for (let line of wireframeSphere) {
+                beginShape();
+                for (let v of line.points) {
+                    stroke(constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255), constrain(alpha, 180, 255));
+                    vertex(v.x, v.y, v.z);
+                }
+                if (line.type === 'latitude' && line.points.length > 0) {
+                     let first = line.points[0];
+                     vertex(first.x, first.y, first.z);
+                }
+                endShape();
+            }

@@ -1,12 +1,43 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
-import { getAllPosts } from "../lib/content-utils";
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-  <Welcome />
+  <header class="bg-gray-800 text-white py-4">
+    <nav class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">KJK Astro</h1>
+      <ul class="flex space-x-4">
+        <li><a href="/" class="hover:underline">Home</a></li>
+        <li><a href="/docs" class="hover:underline">Docs</a></li>
+        <li><a href="/games" class="hover:underline">Games</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container mx-auto py-8">
+    <section class="text-center mb-12">
+      <h2 class="text-4xl font-bold mb-4">Welcome to KJK Astro</h2>
+      <p class="text-gray-600">
+        Explore our documentation and fun interactive games.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-2">Documentation</h3>
+        <p class="text-gray-600 mb-4">
+          Dive into our comprehensive docs to learn more.
+        </p>
+        <a href="/docs" class="text-blue-500 hover:underline">Explore Docs</a>
+      </div>
+
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-2">Games</h3>
+        <p class="text-gray-600 mb-4">
+          Check out our collection of interactive games.
+        </p>
+        <a href="/games" class="text-blue-500 hover:underline">Play Games</a>
+      </div>
+    </section>
+  </main>
 </Layout>

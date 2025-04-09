@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Refined Orb // v2 - Fixed Haptics & Audio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #000000; /* Pure black */
+            color: #e0e0e0; /* Light gray text default */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* System font stack */
+            touch-action: none; /* Disable default touch actions like pinch-zoom */
+            cursor: crosshair; /* Indicate interactivity */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+        canvas {
+            display: block; /* Remove extra space below canvas */
+        }
+        /* Cleaner, iOS-inspired back button */
+        #backButton {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 24px; /* Adjusted size */
+            font-weight: 400; /* Regular weight */
+            color: rgba(220, 220, 220, 0.8); /* Lighter, slightly transparent */
+            background-color: rgba(50, 50, 50, 0.3); /* Subtle background */
+            border: none;
+            border-radius: 50%; /* Circle */
+            width: 36px; /* Fixed size */
+            height: 36px; /* Fixed size */
+            line-height: 36px; /* Center symbol vertically */
+            text-align: center; /* Center symbol horizontally */
+            cursor: pointer;
+            z-index: 1000;
+            padding: 0;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        #backButton:hover {
+            background-color: rgba(80, 80, 80, 0.5);
+            color: rgba(255, 255, 255, 1);
+        }
+        #backButton:active {
+             background-color: rgba(100, 100, 100, 0.6);
+        }
+        /* Debug Console for Mobile Issues */
+        #debugConsole {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 10px;
+            color: rgba(150, 150, 150, 0.7);
+            background-color: rgba(0,0,0,0.3);
+            padding: 3px 5px;
+            border-radius: 3px;
+            max-width: 80%;
+            max-height: 50px; /* Limit height */
+            overflow-y: auto; /* Allow scrolling if needed */
+            z-index: 1001; /* Above button */
+            pointer-events: none; /* Don't interfere with interactions */
+            line-height: 1.2; /* Improve readability */
+        }
+        /* Haptic test button */
+        #hapticTestButton {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(50, 50, 50, 0.3);
+            color: rgba(220, 220, 220, 0.8);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            line-height: 36px; /* Center icon */
+            text-align: center; /* Center icon */
+        }
+        #hapticTestButton:hover {
+            background-color: rgba(80, 80, 80, 0.5);
+            color: rgba(255, 255, 255, 1);
+        }
+        #hapticTestButton:active {
+            background-color: rgba(100, 100, 100, 0.6);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+</head>
+<body>
+    <button id="backButton" onclick="goBack()" aria-label="Go Back">&#x2190;</button>
+    <div id="debugConsole">Debug Log:<br></div>
+    <script>
+        // --- Configuration ---
+        const SPHERE_RADIUS = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+        const SPHERE_DETAIL = 22; // Level of detail for the sphere lines
+        const MOMENTUM_FRICTION = 0.975; // How quickly momentum fades (closer to 1 = less friction)
+        const GRAVITY_PULL = 0.00006; // Strength of gravity/accelerometer effect
+        const ACCEL_MULTIPLIER = 60; // Multiplier for accelerometer input
+        const NOTCH_DISTANCE_DRAG = 12; // Pixel distance dragged to trigger a 'notch' effect
+        const NOTCH_DISTANCE_MOMENTUM = 15; // Distance traveled by momentum to trigger a 'notch'
+        const CHARGE_DECAY = 0.986; // How quickly the charge level fades
+        const MAX_CHARGE = 100; // Maximum charge level
+        const CHARGE_RATE_DRAG = 0.25; // How much charge is added per notch while dragging
+        const CHARGE_RATE_FAST_DRAG_MULT = 1.6; // Multiplier for charge rate during fast drags
+        const CHARGE_RATE_MOMENTUM = 8; // How much charge is added based on momentum speed
+        const BIG_DISCHARGE_MIN_INTERVAL = 2200; // Minimum ms between major discharge effects
+        const HEARTBEAT_RATE = 0.8; // Speed of the pulsing glow effect
+        const MAX_GLOW_BLUR = 35; // Maximum blur radius for the sphere glow
+        const JITTER_INTENSITY = 0.004; // (Not currently used, but kept for potential future use)
+        const STAR_COUNT = 150; // Number of background stars
+        const DRAG_MOMENTUM_FACTOR = 0.08; // How much drag movement contributes to immediate momentum change
+
+        // --- Enhanced Haptic Configuration ---
+        const HAPTIC_CONFIG = {
+            // Vibration patterns/durations in milliseconds
+            CLICK: {
+                duration: 15,         // Short vibration for minor feedback
+                cooldown: 80,         // Minimum time between click haptics
+            },
+            MAJOR: {
+                duration: 80,         // Longer vibration for major feedback
+                // pattern: [20, 30, 60], // Example pattern (can be used if needed)
+                cooldown: 400,        // Longer cooldown for major effects
+            },
+            // Global settings
+            ENABLED: true,            // Master switch for haptics
+            MIN_INTERVAL: 50,         // Global minimum interval between ANY haptic feedback
+            LOG_ATTEMPTS: true        // Log haptic attempts to debug console
+        };
+
+        // --- State Variables ---
+        let rotX = 0; // Current rotation around the Y-axis (horizontal)
+        let rotY = 0; // Current rotation around the X-axis (vertical)
+        let prevMouseX, prevMouseY; // Previous mouse/touch coordinates for calculating drag delta
+        let isDragging = false; // Flag indicating if the user is currently dragging
+        let momX = 0, momY = 0; // Momentum for rotation axes
+        let wireframeSphere; // Array holding the geometry data for the sphere lines
+        let distanceSinceLastNotch = 0; // Tracks distance dragged since the last notch effect
+        let momentumDistanceSinceLastNotch = 0; // Tracks distance moved by momentum since the last notch
+        let chargeLevel = 0; // Current charge level of the orb
+        let discharges = []; // Array to hold active discharge particle effects
+        let intensityHistory = []; // History of interaction intensity (used for effects)
+        const INTENSITY_HISTORY_MAX = 15; // Max length of intensity history
+        let lastBigDischargeTime = 0; // Timestamp of the last major discharge
+        let heartbeatPulse = 0; // Value oscillating for the heartbeat glow effect (0 to 1)
+        let accelX = 0, accelY = 0; // Smoothed accelerometer readings
+        let isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent); // Detect mobile devices
+        let stars = []; // Array holding star positions and sizes
+        let debugConsole; // Reference to the debug log DOM element
+
+        // --- Audio Variables ---
+        let audioContext; // The Web Audio API AudioContext
+        let masterGain; // Master gain node for controlling overall volume
+        let audioInitialized = false; // Flag indicating if audio has been started by user interaction
+        let clickSynth; // Tone.js synth for click sounds
+        let dischargeSynth; // Tone.js synth for major discharge sounds
+
+        // --- Haptic State tracking ---
+        const HAPTIC_STATE = {
+            lastTriggerTime: 0,       // Timestamp of the last triggered haptic
+            lastTriggerTypes: {},     // Timestamps for each specific haptic type's last trigger
+            apiSupportChecked: false, // Whether navigator.vibrate support has been checked
+            vibrateSupported: false,  // Flag indicating if navigator.vibrate is supported
+            userActivated: false      // Flag indicating if user interaction has occurred (needed for vibrate)
+        };
+
+        // --- Utility ---
+        /**
+         * Logs a message to the on-screen debug console.
+         * @param {string} message - The message to log.
+         */
+        function logDebug(message) {
+            if (!debugConsole) return; // Exit if console element not found
+            try {
+                const maxLines = 5;
+                // Get current content, remove prefix
+                let content = debugConsole.innerHTML.replace('Debug Log:<br>', '');
+                let lines = content.split('<br>').filter(line => line.trim() !== ''); // Filter empty lines
+                // Add new message with timestamp
+                lines.push(`${(performance.now() / 1000).toFixed(1)}s: ${message}`);
+                // Trim old lines if exceeding maxLines
+                if (lines.length > maxLines) {
+                    lines = lines.slice(lines.length - maxLines);
+                }
+                // Update console content and scroll to bottom
+                debugConsole.innerHTML = 'Debug Log:<br>' + lines.join('<br>');
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+            } catch (e) {
+                console.error("Error logging to debug console:", e);
+            }
+        }
+
+        /**
+         * Navigates back in the browser history.
+         */
+        function goBack() {
+            window.history.back();
+        }
+
+        // --- p5.js Setup Function ---
+        function setup() {
+            // Create canvas filling the window, using WebGL renderer
+            createCanvas(windowWidth, windowHeight, WEBGL);
+            // Default drawing styles
+            noFill(); // Don't fill shapes
+            strokeWeight(1.2); // Line thickness
+
+            logDebug(`Canvas: ${windowWidth}x${windowHeight}, Mobile: ${isMobile}`);
+
+            // Generate the sphere geometry
+            wireframeSphere = createWireframeSphere(SPHERE_RADIUS, SPHERE_DETAIL);
+            if (!wireframeSphere || wireframeSphere.length === 0) {
+                 console.error("Wireframe sphere creation failed.");
+                 logDebug("Error: Sphere geometry failed.");
+            }
+
+            // Generate background stars
+            generateStars();
+            // Get reference to the debug console element
+            debugConsole = document.getElementById('debugConsole');
+
+            // --- Event Listeners ---
+            let canvasElement = document.querySelector('canvas');
+            // Mouse events
+            canvasElement.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove); // Use document to track mouse outside canvas
+            document.addEventListener('mouseup', handleMouseUp); // Use document to catch mouseup anywhere
+            // Touch events (use passive: false to allow preventDefault if needed)
+            canvasElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+            // Mouse wheel event for potential future zooming/interaction
+            canvasElement.addEventListener('wheel', handleWheel, { passive: false });
+
+            // --- Initialization Triggers ---
+            // Use pointerdown for broader compatibility (mouse/touch/pen)
+            // These initializations require user interaction
+            document.body.addEventListener('pointerdown', initializeUserInteractionFeatures, { once: true });
+
+            // Add the haptic test button dynamically
+            addHapticTestButton();
+
+            // --- Initial Momentum ---
+            // Give the sphere a slight initial spin
+            if (isMobile && window.DeviceMotionEvent) {
+                logDebug("DeviceMotion supported, adding listener.");
+                window.addEventListener('devicemotion', handleDeviceMotion);
+                // Start with slightly more random momentum on mobile
+                momX = random(-0.008, 0.008);
+                momY = random(-0.008, 0.008);
+            } else {
+                 if (isMobile) logDebug("DeviceMotion not fully supported or available.");
+                // Less initial momentum on desktop
+                momX = random(-0.003, 0.003);
+                momY = random(-0.003, 0.003);
+            }
+
+            logDebug("Setup complete.");
+        }
+
+        /**
+         * Initializes features requiring user interaction (Audio, Haptics).
+         * Called once on the first pointerdown event.
+         */
+        function initializeUserInteractionFeatures() {
+            logDebug("User interaction detected.");
+            HAPTIC_STATE.userActivated = true; // Mark user activation for haptics
+            initAudio(); // Attempt to initialize audio
+            checkHapticSupport(); // Check haptic capabilities
+            // Optional: Trigger a small haptic/sound to confirm activation
+            // setTimeout(() => triggerHaptic('click'), 50);
+        }
+
+
+        // --- Audio System (Tone.js) ---
+        /**
+         * Initializes the Web Audio API using Tone.js. Requires user interaction.
+         */
+        async function initAudio() {
+            if (audioInitialized || !Tone) {
+                logDebug(`Audio init skipped: Initialized=${audioInitialized}, Tone=${!!Tone}`);
+                return;
+            }
+            try {
+                // Start Tone.js audio context (requires user gesture)
+                await Tone.start();
+                audioContext = Tone.context; // Get the underlying AudioContext
+                masterGain = new Tone.Gain(0.7).toDestination(); // Master volume control
+
+                // --- Define Synths ---
+                // Click Synth (simple, percussive)
+                clickSynth = new Tone.Synth({
+                    oscillator: { type: 'triangle' }, // Softer than sine/square
+                    envelope: {
+                        attack: 0.001,
+                        decay: 0.05,
+                        sustain: 0.01,
+                        release: 0.08
+                    },
+                    volume: -18 // Quieter volume
+                }).connect(masterGain);
+
+                // Discharge Synth (noisy, more complex)
+                dischargeSynth = new Tone.NoiseSynth({
+                    noise: { type: 'white' }, // White noise for static
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.15,
+                        sustain: 0,
+                        release: 0.2
+                    },
+                    volume: -10 // Louder than click
+                }).connect(masterGain);
+
+                audioInitialized = true;
+                logDebug("Audio initialized successfully (Tone.js).");
+
+            } catch (e) {
+                console.error("Audio initialization failed:", e);
+                logDebug(`Audio init failed: ${e.message}`);
+                audioInitialized = false;
+            }
+        }
+
+        /**
+         * Plays a click sound effect.
+         * @param {number} intensity - Controls pitch/volume (0 to 1).
+         * @param {boolean} [triggerHapticFeedback=true] - Whether to also trigger haptic feedback.
+         */
+        function playClickSound(intensity, triggerHapticFeedback = true) {
+            if (!audioInitialized || !clickSynth) return;
+
+            // Map intensity to frequency (higher intensity = higher pitch)
+            const freq = Tone.Midi(60 + intensity * 36).toFrequency(); // Base C4, range of 3 octaves
+            // Map intensity to velocity (higher intensity = slightly louder)
+            const velocity = 0.4 + intensity * 0.4; // Range 0.4 to 0.8
+
+            try {
+                // Trigger the synth note
+                clickSynth.triggerAttackRelease(freq, '16n', Tone.now(), velocity);
+
+                // Optionally trigger haptic feedback associated with the click
+                if (triggerHapticFeedback) {
+                    triggerHaptic('click'); // Use the simplified haptic call
+                }
+            } catch (e) {
+                console.error("Error playing click sound:", e);
+                logDebug("Error playing click sound.");
+            }
+        }
+
+        /**
+         * Plays a major discharge sound effect.
+         * @param {boolean} [triggerHapticFeedback=true] - Whether to also trigger haptic feedback.
+         */
+        function playMajorDischargeSound(triggerHapticFeedback = true) {
+            if (!audioInitialized || !dischargeSynth) return;
+
+            try {
+                // Trigger the noise synth
+                dischargeSynth.triggerAttackRelease('8n', Tone.now()); // Play for an 8th note duration
+
+                // Optionally trigger major haptic feedback
+                if (triggerHapticFeedback) {
+                    triggerHaptic('major'); // Use the simplified haptic call
+                }
+            } catch (e) {
+                console.error("Error playing discharge sound:", e);
+                logDebug("Error playing discharge sound.");
+            }
+        }
+
+
+        // --- Haptic System Functions (Simplified) ---
+        /**
+         * Checks for navigator.vibrate support.
+         */
+        function checkHapticSupport() {
+            if (HAPTIC_STATE.apiSupportChecked) return;
+
+            HAPTIC_STATE.vibrateSupported = window.navigator && typeof window.navigator.vibrate === 'function';
+            HAPTIC_STATE.apiSupportChecked = true;
+            logDebug(`Haptic support (navigator.vibrate): ${HAPTIC_STATE.vibrateSupported}`);
+        }
+
+        /**
+         * Triggers haptic feedback using navigator.vibrate if supported and enabled.
+         * @param {'click' | 'major'} type - The type of haptic feedback to trigger.
+         * @returns {boolean} - True if haptic feedback was attempted, false otherwise.
+         */
+        function triggerHaptic(type) {
+            // Ensure support is checked and user has interacted
+            if (!HAPTIC_STATE.apiSupportChecked) checkHapticSupport();
+            if (!HAPTIC_CONFIG.ENABLED || !HAPTIC_STATE.vibrateSupported || !HAPTIC_STATE.userActivated) {
+                if (HAPTIC_CONFIG.LOG_ATTEMPTS && HAPTIC_CONFIG.ENABLED) {
+                    // logDebug(`Haptic ${type} skipped: Enabled=${HAPTIC_CONFIG.ENABLED}, Supported=${HAPTIC_STATE.vibrateSupported}, Activated=${HAPTIC_STATE.userActivated}`);
+                }
+                return false;
+            }
+
+            // Get configuration for this type
+            const config = HAPTIC_CONFIG[type.toUpperCase()];
+            if (!config) {
+                logDebug(`Unknown haptic type: ${type}`);
+                return false;
+            }
+
+            // Check timing restrictions
+            const now = performance.now();
+
+            // Global cooldown check
+            if (now - HAPTIC_STATE.lastTriggerTime < HAPTIC_CONFIG.MIN_INTERVAL) {
+                if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                    // logDebug(`Haptic ${type} skipped: Global cooldown`);
+                }
+                return false;
+            }
+
+            // Type-specific cooldown check
+            const lastTriggerOfType = HAPTIC_STATE.lastTriggerTypes[type] || 0;
+            if (now - lastTriggerOfType < config.cooldown) {
+                if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                    // logDebug(`Haptic ${type} skipped: Type cooldown`);
+                }
+                return false;
+            }
+
+            // Update timing state *before* attempting vibration
+            HAPTIC_STATE.lastTriggerTime = now;
+            HAPTIC_STATE.lastTriggerTypes[type] = now;
+
+            if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                logDebug(`Attempting Haptic: ${type} (${config.duration}ms)`);
+            }
+
+            // Trigger vibration
+            try {
+                // Use duration or pattern from config
+                const vibrationParam = config.pattern || config.duration;
+                const success = navigator.vibrate(vibrationParam);
+                if (!success && HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                     // Note: vibrate() returns true if successful, but spec says it returns void.
+                     // In practice, browsers might return true/false or void.
+                     // We mainly rely on the try/catch and timing checks.
+                    logDebug(`navigator.vibrate call for ${type} might have been ignored by browser.`);
+                } else if (HAPTIC_CONFIG.LOG_ATTEMPTS) {
+                    // logDebug(`navigator.vibrate(${vibrationParam}) called.`);
+                }
+                return true; // Indicate an attempt was made
+            } catch (e) {
+                logDebug(`Haptic error (${type}): ${e.message}`);
+                // Potentially disable haptics if errors persist?
+                // HAPTIC_CONFIG.ENABLED = false;
+                return false;
+            }
+        }
+
+        /**
+         * Adds a button to test haptic feedback.
+         */
+        function addHapticTestButton() {
+            try {
+                const testButton = document.createElement('button');
+                testButton.id = 'hapticTestButton';
+                testButton.innerHTML = '&#x26A1;'; // Lightning bolt emoji
+                testButton.title = 'Test Haptic Feedback';
+                testButton.setAttribute('aria-label', 'Test Haptic Feedback');
+
+                // Use pointerdown for consistency
+                testButton.addEventListener('pointerdown', function(e) {
+                    e.stopPropagation(); // Prevent triggering body's init listener again
+                    this.style.backgroundColor = 'rgba(100, 100, 100, 0.6)';
+
+                    // Ensure audio/haptics are ready (if not already)
+                    initializeUserInteractionFeatures();
+
+                    // Test click haptic
+                    logDebug("--- Haptic Test Start ---");
+                    const clickSuccess = triggerHaptic('click');
+                    logDebug(`Test Click Haptic Attempted: ${clickSuccess}`);
+
+                    // Test major haptic after a delay
+                    setTimeout(() => {
+                        const majorSuccess = triggerHaptic('major');
+                        logDebug(`Test Major Haptic Attempted: ${majorSuccess}`);
+                        logDebug("--- Haptic Test End ---");
+                    }, 300); // Increased delay
+                });
+
+                // Reset style on pointerup/leave
+                 testButton.addEventListener('pointerup', function() {
+                    this.style.backgroundColor = 'rgba(80, 80, 80, 0.5)';
+                 });
+                 testButton.addEventListener('pointerleave', function() {
+                     this.style.backgroundColor = 'rgba(50, 50, 50, 0.3)';
+                     this.style.color = 'rgba(220, 220, 220, 0.8)';
+                 });
+                 testButton.addEventListener('pointerenter', function() {
+                     this.style.backgroundColor = 'rgba(80, 80, 80, 0.5)';
+                     this.style.color = 'rgba(255, 255, 255, 1)';
+                 });
+
+
+                document.body.appendChild(testButton);
+                logDebug("Haptic test button added.");
+            } catch (e) {
+                console.error("Failed to add haptic test button:", e);
+                logDebug("Error adding haptic test button.");
+            }
+        }
+
+
+        // --- Starfield ---
+        /**
+         * Generates random positions and sizes for background stars.
+         */
+        function generateStars() {
+            stars = [];
+            let maxDist = max(width, height); // Base distance on largest screen dimension
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: random(-width * 1.2, width * 1.2), // Spread stars wider than screen
+                    y: random(-height * 1.2, height * 1.2),
+                    z: random(-maxDist * 0.8, maxDist * 0.8), // Z-depth range
+                    size: random(0.8, 2.2) // Star size range
+                });
+            }
+         }
+
+        /**
+         * Draws the background stars with a subtle parallax effect based on momentum.
+         */
+        function drawStars() {
+            push(); // Isolate star drawing transformations
+            noStroke(); // Stars don't have outlines
+
+            // Calculate parallax shift based on sphere momentum (subtle effect)
+            let parallaxX = momY * 150; // Horizontal shift based on vertical momentum
+            let parallaxY = momX * 150; // Vertical shift based on horizontal momentum
+            translate(parallaxX, parallaxY, -400); // Move starfield back slightly
+
+            // Draw each star
+            for (let star of stars) {
+                // Alpha based on depth (closer stars slightly brighter, farther stars dimmer)
+                let alpha = map(abs(star.z), 0, max(width, height) * 0.8, 60, 10);
+                fill(200, 200, 200, alpha); // Semi-transparent white/gray
+
+                push(); // Isolate individual star transformation
+                translate(star.x, star.y, star.z);
+                ellipse(0, 0, star.size, star.size); // Draw star as a small ellipse
+                pop(); // Restore previous matrix state
+            }
+            pop(); // Restore matrix state before star drawing
+        }
+
+        // --- Sphere Geometry Creation ---
+        /**
+         * Creates the line segments for a wireframe sphere.
+         * @param {number} r - Radius of the sphere.
+         * @param {number} detail - Number of latitude/longitude lines.
+         * @returns {Array<object>} - Array of line objects, each with type and points.
+         */
+        function createWireframeSphere(r, detail) {
+            let sphereLines = [];
+            // Create longitude lines (vertical)
+            for (let i = 0; i < detail; i++) {
+                let lon = map(i, 0, detail, 0, TWO_PI); // Angle for this longitude
+                let lonPoints = [];
+                for (let j = 0; j <= detail; j++) { // Iterate through latitude points
+                    let lat = map(j, 0, detail, 0, PI); // Angle for this latitude
+                    // Calculate 3D coordinates
+                    let x = r * sin(lat) * cos(lon);
+                    let y = r * sin(lat) * sin(lon);
+                    let z = r * cos(lat);
+                    lonPoints.push(createVector(x, y, z)); // Store point as p5 vector
+                }
+                sphereLines.push({ type: 'longitude', points: lonPoints });
+            }
+            // Create latitude lines (horizontal circles)
+            for (let j = 1; j < detail; j++) { // Skip poles (j=0 and j=detail)
+                let lat = map(j, 0, detail, 0, PI); // Angle for this latitude
+                let latPoints = [];
+                for (let i = 0; i <= detail; i++) { // Iterate through longitude points
+                    let lon = map(i, 0, detail, 0, TWO_PI); // Angle for this longitude
+                    // Calculate 3D coordinates
+                    let x = r * sin(lat) * cos(lon);
+                    let y = r * sin(lat) * sin(lon);
+                    let z = r * cos(lat);
+                    latPoints.push(createVector(x, y, z)); // Store point as p5 vector
+                }
+                sphereLines.push({ type: 'latitude', points: latPoints });
+            }
+            return sphereLines;
+        }
+
+        // --- Main p5.js Draw Loop ---
+        function draw() {
+            // Set background
+            background(0);
+            // Draw stars first (behind the sphere)
+            drawStars();
+
+            // Update heartbeat pulse value (oscillates between 0 and 1)
+            heartbeatPulse = (sin(frameCount * 0.05 * HEARTBEAT_RATE) + 1) * 0.5;
+
+            // --- Lighting ---
+            ambientLight(60); // Basic ambient illumination
+            // Point light for highlighting
+            pointLight(220, 220, 255, 0, 0, SPHERE_RADIUS * 2.5); // Bluish light from front-top
+
+            // Apply momentum and gravity/accelerometer effects if not dragging
+            handleMomentum();
+
+            // Decay charge level over time
+            chargeLevel = max(0, chargeLevel * CHARGE_DECAY);
+
+            // Randomly trigger small static discharges based on charge level
+            if (chargeLevel > 15 && random() < 0.012 * (chargeLevel / MAX_CHARGE)) {
+                createStaticDischarge(0.7 + random(0.5));
+            }
+            // Check if conditions are met for a major discharge
+            checkForMajorDischarge();
+
+            // --- Sphere Drawing ---
+            push(); // Isolate sphere transformations and styles
+
+            // Apply current rotation based on user input and momentum
+            rotateX(rotY); // Vertical rotation
+            rotateY(rotX); // Horizontal rotation
+
+            // Calculate glow effect based on charge level and heartbeat
+            let chargeRatio = chargeLevel / MAX_CHARGE;
+            let glowIntensity = chargeRatio * MAX_GLOW_BLUR * (0.8 + heartbeatPulse * 0.3);
+            let glowAlpha = map(chargeRatio, 0, 1, 0.05, 0.4) * (0.8 + heartbeatPulse * 0.4);
+
+            // Apply glow using the drawing context's shadow properties (works in WebGL)
+            drawingContext.shadowBlur = glowIntensity;
+            drawingContext.shadowColor = `rgba(150, 180, 255, ${glowAlpha})`; // Bluish glow
+
+            // Draw the sphere lines
+            drawWireframeSphere(chargeRatio);
+
+            // Remove glow effect for subsequent elements (discharges)
+            drawingContext.shadowBlur = 0;
+
+            // Update and draw any active discharge effects
+            // Note: These are drawn *inside* the sphere's rotated matrix
+            // but their internal coordinates are already in world space relative to sphere center
+            updateAndDrawDischarges();
+
+            pop(); // Restore previous drawing state
+        }
+
+        // --- Momentum and Physics ---
+        /**
+         * Updates sphere rotation based on momentum and external forces (gravity/accelerometer).
+         * Also handles triggering sounds/charge based on passive momentum movement.
+         */
+        function handleMomentum() {
+            if (isDragging) {
+                 // If dragging, slowly decay intensity history if not actively moving fast
+                 if (intensityHistory.length > 0 && frameCount % 10 === 0) {
+                    intensityHistory.shift();
+                 }
+                return; // Don't apply momentum physics while user is interacting
+            }
+
+            // Apply accelerometer/gravity influence
+            if (isMobile) {
+                // Apply smoothed accelerometer data
+                momX += accelY * GRAVITY_PULL * ACCEL_MULTIPLIER; // accelY affects horizontal rotation (rotX)
+                momY += accelX * GRAVITY_PULL * ACCEL_MULTIPLIER; // accelX affects vertical rotation (rotY)
+            } else {
+                // Simulate gentle downward pull (gravity) on desktop
+                momY += GRAVITY_PULL; // Affects vertical rotation
+            }
+
+            // Apply momentum to rotation
+            rotX += momX;
+            rotY += momY;
+
+            // Apply friction to dampen momentum
+            momX *= MOMENTUM_FRICTION;
+            momY *= MOMENTUM_FRICTION;
+
+            // --- Effects based on Momentum ---
+            let movementSpeed = sqrt(momX * momX + momY * momY);
+            // Only process effects if there's noticeable movement
+            if (movementSpeed > 0.0001) {
+                // Accumulate distance traveled due to momentum
+                momentumDistanceSinceLastNotch += movementSpeed * SPHERE_RADIUS * 0.6; // Scale based on radius
+
+                // Add charge based on momentum speed
+                let chargeAddMomentum = constrain(movementSpeed * CHARGE_RATE_MOMENTUM, 0, 1.5);
+                chargeLevel = min(MAX_CHARGE, chargeLevel + chargeAddMomentum);
+
+                // Check if enough distance has been covered to trigger a 'notch' effect
+                if (momentumDistanceSinceLastNotch > NOTCH_DISTANCE_MOMENTUM) {
+                    // Calculate intensity based on speed
+                    let intensity = constrain(movementSpeed * 180, 0.05, 0.7);
+                    // Play sound ONLY, no haptic feedback for passive momentum
+                    playClickSound(intensity * 1.1, false); // Pass false to skip haptic
+
+                    // Update intensity history (might be used for other effects)
+                    updateIntensityHistory(intensity);
+
+                    // Chance to create a static discharge based on charge and intensity
+                    let staticProb = map(chargeLevel, 0, MAX_CHARGE, 0.1, 0.4) * map(intensity, 0.05, 0.7, 0.5, 1.2);
+                    if (random() < staticProb) {
+                        createStaticDischarge();
+                    }
+                    // Reset distance tracker
+                    momentumDistanceSinceLastNotch = 0;
+                }
+            }
+        }
+
+        /**
+         * Handles data from the DeviceMotionEvent (accelerometer).
+         * @param {DeviceMotionEvent} event - The motion event data.
+         */
+        function handleDeviceMotion(event) {
+            // Use accelerationIncludingGravity for orientation-independent gravity vector
+            if (event.accelerationIncludingGravity && event.accelerationIncludingGravity.x != null) {
+                // Simple low-pass filter to smooth readings
+                const alpha = 0.1;
+                accelX = alpha * (event.accelerationIncludingGravity.x / 9.81) + (1 - alpha) * accelX; // Normalize roughly
+                accelY = alpha * (event.accelerationIncludingGravity.y / 9.81) + (1 - alpha) * accelY;
+                // We don't use Z here, but could be used for other effects
+            } else {
+                 // Fallback or log if data is missing
+                 // logDebug("No accelerationIncludingGravity data");
+            }
+            // Note: Accessing device motion might require HTTPS and user permissions on iOS/some Android.
+        }
+
+        // --- Drawing Functions ---
+        /**
+         * Draws the wireframe sphere lines with color/alpha based on charge.
+         * @param {number} chargeRatio - Current charge level (0 to 1).
+         */
+        function drawWireframeSphere(chargeRatio) {
+            // Base color: Light gray, pulsing slightly with heartbeat
+            let baseGray = 180 + heartbeatPulse * 20;
+            // Charge color: Adds blue tint and brightness, more pronounced at higher charge
+            let chargeBoost = chargeRatio * chargeRatio * 75; // Non-linear boost
+
+            let r = baseGray;
+            let g = baseGray + chargeBoost * 0.5; // Less green boost
+            let b = baseGray + chargeBoost;       // More blue boost
+            let alpha = 200 + chargeBoost * 0.5; // Slightly increase alpha with charge
+
+            // Set stroke color and alpha, constrained to valid ranges
+            stroke(constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255), constrain(alpha, 180, 255));
+
+            // Draw each line segment (longitude and latitude)
+            if (!wireframeSphere) return; // Safety check
+            for (let line of wireframeSphere) {
+                beginShape(); // Start drawing a connected line strip
+                for (let v of line.points) {
+                    vertex(v.x, v.y, v.z); // Add each vertex to the shape
+                }
+                // For latitude lines, connect the last point back to the first to close the loop
+                if (line.type === 'latitude' && line.points.length > 0) {
+                     let first = line.points[0];
+                     vertex(first.x, first.y, first.z);
+                }
+                endShape(); // Finish drawing the line strip
+            }
+        }
+
+        /**
+         * Updates the state (lifetime) of all active discharges and calls their draw functions.
+         */
+        function updateAndDrawDischarges() {
+             // Iterate backwards to allow safe removal while iterating
+             for (let i = discharges.length - 1; i >= 0; i--) {
+                let d = discharges[i];
+                d.life--; // Decrease lifetime counter
+
+                // Remove discharge if its life is over
+                if (d.life <= 0) {
+                    discharges.splice(i, 1);
+                    continue; // Move to the next discharge
+                }
+
+                // Draw the discharge based on its type
+                // Note: This happens within the sphere's rotated coordinate system
+                if (d.type === 'static') {
+                     drawStaticDischarge(d);
+                } else if (d.type === 'major') {
+                     drawMajorDischarge(d);
+                }
+            }
+        }
+
+        /**
+         * Draws a single static discharge effect (small, flickering line).
+         * @param {object} d - The discharge object data.
+         */
+        function drawStaticDischarge(d) {
+            let lifeRatio = d.life / d.maxLife; // How much life is remaining (1 to 0)
+            // Use noise for flickering effect
+            let flicker = 0.8 + 0.3 * noise(frameCount * 0.35 + d.variation * 10);
+            // Alpha fades out as life decreases, also flickers
+            let alpha = map(sqrt(lifeRatio), 0, 1, 0, 180) * flicker; // Lower max alpha, sqrt for faster fade-out
+            strokeWeight(d.weight * 0.9); // Thinner lines for static
+            // Color: Electric blue/white, flickering
+            stroke(180 + 75 * flicker, 200 + 55 * flicker, 255, alpha);
+            noFill(); // Ensure no fill is applied
+
+            // Draw the line segments of the discharge path
+            for (let seg of d.segments) {
+                line(seg.p1.x, seg.p1.y, seg.p1.z, seg.p2.x, seg.p2.y, seg.p2.z);
+            }
+        }
+
+        /**
+         * Draws a major discharge effect (brighter, more segments).
+         * @param {object} d - The discharge object data.
+         */
+        function drawMajorDischarge(d) {
+            let lifeRatio = d.life / d.maxLife;
+            let flicker = 0.7 + 0.4 * noise(frameCount * 0.5 + d.variation * 5); // More intense flicker
+            let alpha = map(lifeRatio, 0, 1, 0, 255) * flicker; // Brighter, linear fade
+            strokeWeight(d.weight * (0.5 + lifeRatio * 0.8) * flicker); // Weight decreases with life
+             // Color: Brighter white/blue
+            stroke(220 + 35 * flicker, 230 + 25 * flicker, 255, alpha);
+            noFill();
+
+            // Draw the segments
+            for (let seg of d.segments) {
+                line(seg.p1.x, seg.p1.y, seg.p1.z, seg.p2.x, seg.p2.y, seg.p2.z);
+            }
+        }
+
+        // --- Discharge Creation ---
+        /**
+         * Creates data for a static discharge effect.
+         * @param {number} [intensity=1] - Controls length/brightness.
+         */
+        function createStaticDischarge(intensity = 1) {
+            let startPoint = randomPointOnSphere(SPHERE_RADIUS);
+            let segments = [];
+            let currentPoint = startPoint.copy();
+            let numSegments = floor(random(3, 6)); // Fewer segments for static
+            let segmentLength = SPHERE_RADIUS * 0.05 * intensity;
+
+            for (let i = 0; i < numSegments; i++) {
+                // Create a somewhat random direction vector, slightly biased away from center
+                let dir = p5.Vector.random3D().mult(segmentLength);
+                let nextPoint = p5.Vector.add(currentPoint, dir);
+                // Project next point back onto sphere surface (or close to it)
+                nextPoint.setMag(SPHERE_RADIUS + random(-2, 2));
+                segments.push({ p1: currentPoint, p2: nextPoint });
+                currentPoint = nextPoint;
+            }
+
+            discharges.push({
+                type: 'static',
+                segments: segments,
+                life: floor(random(15, 30)), // Shorter lifespan
+                maxLife: 30,
+                weight: random(0.6, 1.2) * intensity,
+                variation: random(100) // For noise function uniqueness
+            });
+        }
+
+        /**
+         * Creates data for a major discharge effect.
+         */
+        function createMajorDischarge() {
+            let startPoint = randomPointOnSphere(SPHERE_RADIUS);
+            let segments = [];
+            let currentPoint = startPoint.copy();
+            let numSegments = floor(random(8, 15)); // More segments
+            let segmentLength = SPHERE_RADIUS * 0.08; // Longer segments
+
+            for (let i = 0; i < numSegments; i++) {
+                let dir = p5.Vector.random3D().mult(segmentLength * random(0.8, 1.2));
+                let nextPoint = p5.Vector.add(currentPoint, dir);
+                nextPoint.setMag(SPHERE_RADIUS + random(-3, 3)); // Slightly more deviation
+                segments.push({ p1: currentPoint, p2: nextPoint });
+                currentPoint = nextPoint;
+            }
+
+             discharges.push({
+                type: 'major',
+                segments: segments,
+                life: floor(random(40, 70)), // Longer lifespan
+                maxLife: 70,
+                weight: random(1.5, 2.8), // Thicker lines
+                variation: random(100)
+            });
+        }
+
+        /**
+         * Checks conditions and triggers a major discharge effect and sound/haptics.
+         */
+        function checkForMajorDischarge() {
+            const now = millis(); // p5.js function for time in milliseconds
+            // Conditions: High charge, sufficient time since last discharge, and high average intensity
+            if (chargeLevel > MAX_CHARGE * 0.85 &&
+                now - lastBigDischargeTime > BIG_DISCHARGE_MIN_INTERVAL &&
+                calculateAverageIntensity() > 0.4) // Requires sustained high intensity
+            {
+                logDebug("Triggering Major Discharge");
+                createMajorDischarge();
+                chargeLevel *= 0.3; // Reduce charge significantly after discharge
+                lastBigDischargeTime = now;
+                intensityHistory = []; // Reset intensity history
+
+                // Trigger major sound and haptic feedback
+                playMajorDischargeSound(true); // true to trigger associated haptic
+            }
+        }
+
+        // --- Interaction Handling ---
+        /**
+         * Handles mouse down events.
+         */
+        function handleMouseDown(e) {
+            isDragging = true;
+            prevMouseX = mouseX; // Use p5's mouseX/Y which accounts for canvas position
+            prevMouseY = mouseY;
+            distanceSinceLastNotch = 0; // Reset notch distance tracker
+            // Don't re-initialize audio/haptics here, use the 'once' listener on body
+        }
+
+        /**
+         * Handles touch start events.
+         */
+        function handleTouchStart(e) {
+            // Prevent default touch behavior like scrolling or zooming
+            // Check if touches array is populated
+             if (e.touches && e.touches.length > 0) {
+                 e.preventDefault();
+                 isDragging = true;
+                 // Use the first touch point
+                 prevMouseX = e.touches[0].clientX;
+                 prevMouseY = e.touches[0].clientY;
+                 distanceSinceLastNotch = 0;
+             } else {
+                 // Fallback or handle no touch points case
+                 isDragging = false; // Ensure not stuck in dragging state
+             }
+        }
+
+        /**
+         * Handles mouse move events.
+         */
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+
+            let currentMouseX = mouseX;
+            let currentMouseY = mouseY;
+
+            processDragMovement(currentMouseX, currentMouseY);
+
+            prevMouseX = currentMouseX;
+            prevMouseY = currentMouseY;
+        }
+
+        /**
+         * Handles touch move events.
+         */
+        function handleTouchMove(e) {
+            if (!isDragging || !e.touches || e.touches.length === 0) return;
+             e.preventDefault(); // Prevent scrolling while dragging
+
+            let currentTouchX = e.touches[0].clientX;
+            let currentTouchY = e.touches[0].clientY;
+
+            processDragMovement(currentTouchX, currentTouchY);
+
+            prevMouseX = currentTouchX;
+            prevMouseY = currentTouchY;
+        }
+
+        /**
+         * Processes the movement delta during a drag operation.
+         * Calculates rotation, triggers notch effects, and updates charge.
+         * @param {number} currentX - Current horizontal position (mouse or touch).
+         * @param {number} currentY - Current vertical position (mouse or touch).
+         */
+        function processDragMovement(currentX, currentY) {
+            let dx = currentX - prevMouseX;
+            let dy = currentY - prevMouseY;
+
+            // Calculate rotation based on drag delta
+            // Adjust sensitivity by dividing dx, dy
+            let rotationSensitivity = 0.008;
+            rotX += dx * rotationSensitivity;
+            rotY -= dy * rotationSensitivity; // Invert dy for natural vertical rotation
+
+            // Apply a small fraction of drag movement directly to momentum for a 'heavier' feel
+            momX += dx * rotationSensitivity * DRAG_MOMENTUM_FACTOR;
+            momY -= dy * rotationSensitivity * DRAG_MOMENTUM_FACTOR;
+
+            // Calculate distance dragged since last update
+            let distMoved = sqrt(dx * dx + dy * dy);
+            distanceSinceLastNotch += distMoved;
+
+             // Calculate instantaneous intensity based on movement speed
+            let currentIntensity = constrain(distMoved / 15, 0, 1.0); // Normalize intensity (adjust divisor for sensitivity)
+            updateIntensityHistory(currentIntensity);
+
+            // Check if notch distance threshold is met
+            if (distanceSinceLastNotch > NOTCH_DISTANCE_DRAG) {
+                let avgIntensity = calculateAverageIntensity();
+                let isFast = avgIntensity > 0.3; // Determine if movement is generally fast
+
+                // Trigger sound and haptic feedback for the notch
+                playClickSound(avgIntensity, true); // Pass true to trigger haptic
+
+                // Add charge based on intensity, more charge for faster movement
+                let chargeRateMultiplier = isFast ? CHARGE_RATE_FAST_DRAG_MULT : 1.0;
+                let chargeToAdd = CHARGE_RATE_DRAG * chargeRateMultiplier * (0.5 + avgIntensity * 0.8); // Base rate + intensity bonus
+                chargeLevel = min(MAX_CHARGE, chargeLevel + chargeToAdd);
+
+                // Chance for static discharge during drag
+                if (chargeLevel > 30 && random() < 0.1 + avgIntensity * 0.3) {
+                    createStaticDischarge(0.5 + avgIntensity * 0.7);
+                }
+
+                distanceSinceLastNotch = 0; // Reset distance tracker
+            }
+        }
+
+        /**
+         * Handles mouse up events.
+         */
+        function handleMouseUp(e) {
+            if (isDragging) {
+                isDragging = false;
+                // Momentum is already partially applied during drag,
+                // friction will take over in handleMomentum()
+            }
+        }
+
+        /**
+         * Handles touch end events.
+         */
+        function handleTouchEnd(e) {
+             // Check if the touch that ended was the one we were tracking
+             // (or if no touches remain)
+             if (isDragging) { // Simple check, assumes single touch interaction
+                 isDragging = false;
+             }
+        }
+
+        /**
+         * Handles mouse wheel events (currently unused, placeholder).
+         */
+        function handleWheel(e) {
+            // Example: Could be used for zooming or changing sphere detail
+            // e.preventDefault(); // Prevent page scroll
+            // let delta = e.deltaY;
+            // logDebug(`Wheel delta: ${delta}`);
+        }
+
+        // --- Helper Functions ---
+        /**
+         * Generates a random point on the surface of a sphere.
+         * @param {number} r - The radius of the sphere.
+         * @returns {p5.Vector} - A vector representing the point.
+         */
+        function randomPointOnSphere(r) {
+            // Uses Marsaglia method (uniform distribution on sphere)
+            let u = random(-1, 1);
+            let v = random(-1, 1);
+            let s = u * u + v * v;
+            while (s >= 1 || s === 0) { // Resample if outside unit circle or at center
+                u = random(-1, 1);
+                v = random(-1, 1);
+                s = u * u + v * v;
+            }
+            let mult = 2 * sqrt(1.0 - s);
+            return createVector(r * mult * u, r * mult * v, r * (1 - 2 * s));
+        }
+
+        /**
+         * Adds an intensity value to the history buffer.
+         * @param {number} intensity - The intensity value (0-1).
+         */
+        function updateIntensityHistory(intensity) {
+            intensityHistory.push(intensity);
+            if (intensityHistory.length > INTENSITY_HISTORY_MAX) {
+                intensityHistory.shift(); // Remove the oldest value
+            }
+        }
+
+        /**
+         * Calculates the average intensity from the history buffer.
+         * @returns {number} - The average intensity (0-1).
+         */
+        function calculateAverageIntensity() {
+            if (intensityHistory.length === 0) return 0;
+            let sum = intensityHistory.reduce((acc, val) => acc + val, 0);
+            return sum / intensityHistory.length;
+        }
+
+        /**
+         * p5.js function called when the window is resized.
+         */
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            // Optional: Regenerate stars or adjust sphere radius based on new size
+            // SPHERE_RADIUS = Math.min(windowWidth, windowHeight) * 0.3;
+            // wireframeSphere = createWireframeSphere(SPHERE_RADIUS, SPHERE_DETAIL);
+            generateStars(); // Regenerate stars to fit new dimensions
+            logDebug(`Window resized: ${windowWidth}x${windowHeight}`);
+        }
+
+        let particles = [];
+        let canvas, ctx;
+        
+        function createParticles(x, y) {
+          for (let i = 0; i < 10; i++) {
+            particles.push({
+              x: x,
+              y: y,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+              life: 20
+            });
+          }
+        }
+        
+        function drawParticles() {
+          if (!ctx) {
+            canvas = document.querySelector('canvas');
+            ctx = canvas.getContext('2d');
+          }
+          particles.forEach((p, i) => {
+            if (--p.life < 0) particles.splice(i, 1);
+            ctx.globalAlpha = p.life / 20;
+            ctx.fillStyle = '#8df';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+          });
+        }
+    </script>
+</body>
+</html>

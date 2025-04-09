@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>p5 Triangle Tunnel</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+</head>
+<body>
+  <script>
+    let triangles = [];
+    let numTriangles = 5;
+    let maxDepth;
+    let baseSize;
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      noFill();
+      stroke(255, 230, 150);
+      maxDepth = sqrt(sq(width) + sq(height)) * 1.2;
+      baseSize = maxDepth / 3;
+
+      for (let i = 0; i < numTriangles; i++) {
+        triangles.push({
+          depth: map(i, 0, numTriangles - 1, 10, maxDepth)
+        });
+      }
+    }
+
+    function draw() {
+      background(0);
+      translate(width / 2, height / 2);
+
+      for (let tri of triangles) {
+        tri.depth -= 3;
+        if (tri.depth < 10) {
+          tri.depth = maxDepth;
+        }
+
+        let scale = pow(map(tri.depth, 0, maxDepth, 1.5, 0.02), 2.2);
+        let alpha = 255;
+        let weight = 2;
+        let spin = -PI / 2;
+
+        let r = 200 + 55 * sin(frameCount * 0.05 + tri.depth * 0.01);
+        let g = 180 + 75 * sin(frameCount * 0.07 + tri.depth * 0.02);
+        let b = 100 + 100 * sin(frameCount * 0.09 + tri.depth * 0.03);
+        stroke(r, g, b, alpha);
+        strokeWeight(weight);
+        beginShape();
+        for (let j = 0; j < 3; j++) {
+          let angle = j * TWO_PI / 3 + spin;
+          let rarePulse = random() > 0.9995;
+          let distortion = rarePulse ? 10 * sin(frameCount * 0.1 + j) : 0;
+          let noiseOffset = rarePulse ? map(noise(j, frameCount * 0.01, tri.depth * 0.01), 0, 1, -5, 5) : 0;
+          let x = cos(angle) * baseSize * scale + distortion + noiseOffset;
+          let y = sin(angle) * baseSize * scale + distortion + noiseOffset;
+          vertex(x, y);
+        }
+        endShape(CLOSE);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</body>
+</html>

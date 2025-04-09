@@ -1,0 +1,21 @@
+---
+import { getEntryBySlug } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+const { slug } = Astro.params;
+const doc = await getEntryBySlug("docs", slug);
+
+if (!doc) {
+  throw new Error(`Document with slug '${slug}' not found.`);
+}
+---
+
+<Layout>
+  <article class="prose mx-auto">
+    <h1>{doc.data.title}</h1>
+    <p class="text-gray-500">
+      {new Date(doc.data.pubDate).toLocaleDateString()}
+    </p>
+    <div>{doc.Content()}</div>
+  </article>
+</Layout>

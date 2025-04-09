@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+</head>
+<body>
+<script>
+let sphere = [];
+let discharges = [];
+let rotX = 0, rotY = 0;
+let autoRotate = true;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight, WEBGL);
+  noFill();
+  stroke(200, 220, 255);
+  strokeWeight(1);
+
+  // Debugging: Log canvas dimensions
+  console.log(`Canvas created with dimensions: ${windowWidth}x${windowHeight}`);
+
+  createSphere(200, 16);
+
+  // Debugging: Log sphere creation
+  if (sphere && sphere.length > 0) {
+    console.log(`Sphere created with ${sphere.length} lines.`);
+  } else {
+    console.error("Sphere creation failed.");
+  }
+
+  canvas = document.querySelector('canvas');
+  canvas.addEventListener('mousedown', () => autoRotate = false);
+  canvas.addEventListener('touchstart', () => autoRotate = false);
+}
+
+function draw() {
+  background(0);
+
+  // Debugging: Log frame count
+  if (frameCount % 60 === 0) {
+    console.log(`Frame: ${frameCount}, rotX: ${rotX}, rotY: ${rotY}`);
+  }
+
+  drawingContext.shadowBlur = 20;
+  drawingContext.shadowColor = 'rgba(100, 150, 255, 0.5)';
+
+  if (autoRotate) {
+    rotX += 0.01;
+    rotY += 0.005;
+  } else {
+    rotX = map(mouseX, 0, width, 0, TWO_PI);
+    rotY = map(mouseY, 0, height, 0, PI);
+  }
+
+  push();
+  rotateY(rotX);
+  rotateX(rotY);
+
+  // Debugging: Log sphere rendering
+  if (sphere && sphere.length > 0) {
+    console.log("Rendering sphere...");
+  } else {
+    console.error("Sphere is empty or undefined.");
+  }
+
+  for (let line of sphere) {
+    beginShape();
+    for (let v of line) {
+      vertex(v.x, v.y, v.z);
+    }
+    endShape();
+  }
+
+  updateDischarges();
+  pop();
+}
+
+function createSphere(r, detail) {
+  // Create longitude lines
+  for (let i = 0; i < detail; i++) {
+    let lon = map(i, 0, detail, 0, TWO_PI);
+    let points = [];
+    for (let j = 0; j <= detail; j++) {
+      let lat = map(j, 0, detail, 0, PI);
+      let x = r * sin(lat) * cos(lon);
+      let y = r * sin(lat) * sin(lon);
+      let z = r * cos(lat);
+      points.push(createVector(x, y, z));
+    }
+    sphere.push(points);
+  }
+  
+  // Create latitude lines
+  for (let j = 1; j < detail; j++) {
+    let lat = map(j, 0, detail, 0, PI);
+    let points = [];
+    for (let i = 0; i <= detail; i++) {
+      let lon = map(i, 0, detail, 0, TWO_PI);
+      let x = r * sin(lat) * cos(lon);
+      let y = r * sin(lat) * sin(lon);
+      let z = r * cos(lat);
+      points.push(createVector(x, y, z));
+    }
+    sphere.push(points);
+  }
+}
+
+function createDischarge() {
+  let discharge = {
+    start: p5.Vector.random3D().mult(200), // Start on sphere surface
+    segments: [],
+    life: 10 + random(10)
+  };
+  
+  let numSegments = floor(random(2, 5));
+  let currentPoint = discharge.start.copy();
+  let dir = p5.Vector.random3D().normalize();
+  
+  for (let i = 0; i < numSegments; i++) {
+    let length = random(10, 30);
+    let nextPoint = p5.Vector.add(
+      currentPoint, 
+      p5.Vector.add(dir.copy().mult(length), p5.Vector.random3D().mult(length * 0.4))
+    );
+    discharge.segments.push({
+      p1: currentPoint.copy(),
+      p2: nextPoint.copy()
+    });
+    currentPoint = nextPoint;
+  }
+  
+  discharges.push(discharge);
+}
+
+function updateDischarges() {
+  for (let i = discharges.length - 1; i >= 0; i--) {
+    let d = discharges[i];
+    d.life--;
+    
+    if (d.life <= 0) {
+      discharges.splice(i, 1);
+      continue;
+    }
+    
+    // Flickering effect
+    let alpha = map(d.life, 0, 20, 0, 255) * (0.5 + random(0.5));
+    stroke(200, 220, 255, alpha);
+    
+    for (let seg of d.segments) {
+      line(seg.p1.x, seg.p1.y, seg.p1.z, seg.p2.x, seg.p2.y, seg.p2.z);
+    }
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plasma Touch</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let solidParticles = [];
+    let energyParticles = [];
+    let mouseDown = false;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    function randomUpwardVelocity() {
+      const angle = -(Math.random() * Math.PI); // angle from 0 to -PI, mostly upward
+      const speed = 2 + Math.random() * 3; // speed between 2 and 5
+      return {
+        x: Math.cos(angle) * speed,
+        y: Math.sin(angle) * speed
+      };
+    }
+
+    function randomEnergyVelocity() {
+      // Choose an angle between 60° and 120° (PI/3 to 2*PI/3) for a symmetric vertical spread
+      const angle = Math.PI / 3 + Math.random() * (Math.PI / 3);
+      const speed = 0.5 + Math.random() * 0.5; // speed between 0.5 and 1
+      return {
+        x: Math.cos(angle) * speed, 
+        y: -Math.sin(angle) * speed  // negative to shoot upward
+      };
+    }
+
+    function invertColor(color) {
+      if(color === "white") return "black";
+      if(color === "black") return "white";
+      // Match rgb(...)
+      let rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (rgbMatch) {
+        let r = 255 - parseInt(rgbMatch[1]);
+        let g = 255 - parseInt(rgbMatch[2]);
+        let b = 255 - parseInt(rgbMatch[3]);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+      // Match rgba(..., without the alpha value at the end)
+      let rgbaMatch = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),/);
+      if (rgbaMatch) {
+        let r = 255 - parseInt(rgbaMatch[1]);
+        let g = 255 - parseInt(rgbaMatch[2]);
+        let b = 255 - parseInt(rgbaMatch[3]);
+        return `rgba(${r}, ${g}, ${b},`;
+      }
+      return color; // fallback if no match
+    }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let groundHeights = [];
+    for (let i = 0; i < canvas.width; i++) {
+      groundHeights[i] = canvas.height;
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      groundHeights = [];
+      for (let i = 0; i < canvas.width; i++) {
+        groundHeights[i] = canvas.height;
+      }
+    });
+
+    canvas.addEventListener('mousedown', () => mouseDown = true);
+    canvas.addEventListener('mouseup', () => mouseDown = false);
+    canvas.addEventListener('mouseleave', () => mouseDown = false);
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      mouseDown = true;
+      const touch = e.touches[0];
+      mouseX = touch.clientX;
+      mouseY = touch.clientY;
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      mouseX = touch.clientX;
+      mouseY = touch.clientY;
+    });
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      mouseDown = false;
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    setInterval(() => {
+      if (mouseDown) {
+        solidParticles.push(new SolidParticle(mouseX, mouseY));
+        // Unleash a burst of energy particles like a laser continuously
+        for (let i = 0; i < 5; i++) {
+          energyParticles.push(new EnergyParticle(mouseX, mouseY));
+        }
+      }
+    }, 50);
+
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      // For each solid particle, create 10 energy particles with inverted colors
+      solidParticles.forEach(sp => {
+        for (let i = 0; i < 10; i++) {
+          let ep = new EnergyParticle(sp.x, sp.y);
+          ep.color = invertColor(ep.color);
+          energyParticles.push(ep);
+        }
+      });
+      // Invert colors of all existing energy particles
+      energyParticles.forEach(ep => {
+        ep.color = invertColor(ep.color);
+      });
+      // Clear solid particles and stop continuous spawning
+      solidParticles = [];
+      mouseDown = false;
+    });
+
+    class SolidParticle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 2; // smaller size for granular effect
+        this.speedX = (Math.random() - 0.5) * 1; // reduced lateral movement for sandier effect
+        this.speedY = (Math.random() - 0.5) * 1;
+        this.landed = false;
+        this.color = Math.random() < 0.03 ? 'rgb(18, 53, 36)' : 'white';
+        this.health = 100;
+      }
+      update() {
+        if (!this.landed) {
+          const gravity = 0.15; // increased gravity for sand-like settling
+          this.speedY += gravity;
+          this.x += this.speedX;
+          this.y += this.speedY;
+          // Determine ground height in the vicinity of this particle
+          const xStart = Math.max(0, Math.floor(this.x - this.size));
+          const xEnd = Math.min(canvas.width - 1, Math.floor(this.x + this.size));
+          let ground = canvas.height;
+          for (let i = xStart; i <= xEnd; i++) {
+            if (groundHeights[i] < ground) ground = groundHeights[i];
+          }
+          if (this.y >= ground - this.size) {
+            this.y = ground - this.size;
+            this.landed = true;
+            // Update the ground height for the region of this particle
+            for (let i = xStart; i <= xEnd; i++) {
+              if (this.y < groundHeights[i]) {
+                groundHeights[i] = this.y;
+              }
+            }
+          }
+        }
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+
+    class EnergyParticle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        const vel = randomEnergyVelocity();
+        this.speedX = vel.x;
+        this.speedY = vel.y;
+        this.size = Math.random() * 3 + 1; // smaller size for finer arcs
+        this.life = 100;
+        this.color = Math.random() < 0.03 ? 'rgb(18, 53, 36)' : 'rgba(250, 250, 250,';
+      }
+      update() {
+        const gravity = 0.05;
+        this.speedY += gravity;
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.size *= 0.98;
+        this.life--;
+        
+        return this.life > 0 && this.size > 0.2;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.fillStyle = this.color.includes('rgba')
+          ? `${this.color} ${this.life / 100})`
+          : this.color;
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function animate() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw solid particles, and spawn energy particles from landed ones
+      solidParticles.forEach(s => {
+        s.update();
+        s.draw();
+        if (s.landed && Math.random() < 0.2) { // reduced chance for a more controlled effect
+          for (let i = 0; i < 3; i++) {       // spawn 3 energy particles
+            energyParticles.push(new EnergyParticle(s.x, s.y));
+          }
+        }
+      });
+
+      // Update and draw energy particles
+      energyParticles = energyParticles.filter(p => {
+        const active = p.update();
+        if (active) p.draw();
+        return active;
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

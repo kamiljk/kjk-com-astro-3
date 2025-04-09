@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Electro Ball Haptic Hack</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #hapticSwitch {
+      position: absolute;
+      left: -9999px;
+      -webkit-appearance: switch;
+      appearance: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <input id="hapticSwitch" type="checkbox" />
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const hapticSwitch = document.getElementById('hapticSwitch');
+
+    let width, height;
+    let rotation = 0;
+    let hapticInterval = null;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function drawSphere(ctx, radius, segments, rings, rotY) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= rings; i++) {
+        const theta = i * Math.PI / rings;
+        const y = radius * Math.cos(theta);
+        const r = radius * Math.sin(theta);
+        ctx.beginPath();
+        for (let j = 0; j <= segments; j++) {
+          const phi = j * 2 * Math.PI / segments + rotY;
+          const x = r * Math.cos(phi);
+          const z = r * Math.sin(phi);
+          const scale = 1 / (1 + z / radius); // simple perspective
+          ctx.lineTo(x * scale, y * scale);
+        }
+        ctx.stroke();
+      }
+
+      for (let j = 0; j < segments; j++) {
+        const phi = j * 2 * Math.PI / segments + rotY;
+        ctx.beginPath();
+        for (let i = 0; i <= rings; i++) {
+          const theta = i * Math.PI / rings;
+          const y = radius * Math.cos(theta);
+          const r = radius * Math.sin(theta);
+          const x = r * Math.cos(phi);
+          const z = r * Math.sin(phi);
+          const scale = 1 / (1 + z / radius);
+          ctx.lineTo(x * scale, y * scale);
+        }
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      drawSphere(ctx, 120, 24, 16, rotation);
+      rotation += 0.01;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    function startFakeHaptics() {
+      if (hapticInterval) return;
+      hapticInterval = setInterval(() => {
+        hapticSwitch.checked = !hapticSwitch.checked;
+      }, 75);
+    }
+
+    function stopFakeHaptics() {
+      clearInterval(hapticInterval);
+      hapticInterval = null;
+      hapticSwitch.checked = false;
+    }
+
+    canvas.addEventListener('pointerdown', startFakeHaptics);
+    canvas.addEventListener('pointerup', stopFakeHaptics);
+    canvas.addEventListener('pointercancel', stopFakeHaptics);
+    canvas.addEventListener('pointerleave', stopFakeHaptics);
+  </script>
+
+</body>
+</html>
