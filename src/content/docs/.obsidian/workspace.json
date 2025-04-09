@@ -1,0 +1,198 @@
+{
+  "main": {
+    "id": "26ea5e729456fb3e",
+    "type": "split",
+    "children": [
+      {
+        "id": "513f895a81c01868",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "72a0698a76d1769d",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "cb88642a251d50cf",
+    "type": "split",
+    "children": [
+      {
+        "id": "f7027d907770f1fa",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "604cf8dfd3232d97",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "80c3f775cabe2c80",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "73e8b1e01fad95c0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "136e99a2ae2c8c64",
+    "type": "split",
+    "children": [
+      {
+        "id": "4cde6a7c29e85037",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ecf170c82cec309e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "breakaway-civilization.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for breakaway-civilization"
+            }
+          },
+          {
+            "id": "d85855f498bcff84",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "breakaway-civilization.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from breakaway-civilization"
+            }
+          },
+          {
+            "id": "a3245d1ac1ac9b10",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9845a7c5ce021e8f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "breakaway-civilization.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of breakaway-civilization"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-excalidraw-plugin:New drawing": false
+    }
+  },
+  "active": "604cf8dfd3232d97",
+  "lastOpenFiles": [
+    "hypernormalization.md",
+    "reality.md",
+    "regimes-of-truth.md",
+    "resistance.md",
+    "paranoia.md",
+    "power.md",
+    "memeplex.md",
+    "homonoia.md",
+    "digital-liminality.md",
+    "colonialism.md",
+    "actor-network-theory.md",
+    "Excalidraw/Drawing 2025-04-09 00.05.55.excalidraw.md",
+    "Excalidraw/Drawing 2025-04-09 00.05.57.excalidraw.md",
+    "temporality.md",
+    "memetics.md",
+    "meta_game_theory.md",
+    "meta-game.md",
+    "moat.md",
+    "mutual-aid-networks.md",
+    "political-parties.md",
+    "revolution.md",
+    "rhizome.md",
+    "semantics.md",
+    "simulacra.md",
+    "spectrum-of-agency.md",
+    "synchronicity.md",
+    "Excalidraw"
+  ]
+}

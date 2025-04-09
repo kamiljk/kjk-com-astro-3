@@ -1,4 +1,11 @@
 {
+<<<<<<< HEAD
     "frontMatter.framework.id": "astro",
     "frontMatter.preview.host": "http://localhost:4321"
+=======
+    "[markdown]": {
+    },
+    "frontMatter.panel.openOnSupportedFile": false,
+    "frontMatter.dashboard.openOnStart": true
+>>>>>>> 477fb62 (Add initial definitions for various concepts related to liminality and social dynamics)
 }
