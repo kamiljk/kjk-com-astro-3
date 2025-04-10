@@ -1,28 +1,45 @@
 ---
-title: "Document Viewer"
-description: "Displays content for a specific document based on its slug."
----
+title: "Document Viewer";
+description: "Displays content for a specific document based on its slug.";
 
-import { getEntryBySlug } from "astro:content";
+import { getEntry } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 
-const { slug } = Astro.params;
-const doc = await getEntryBySlug<
-  { Content: () => string; data: { title: string; pubDate: string } },
-  "docs"
->("docs", slug);
+export async function getStaticPaths() {
+  const docs = import.meta.glob("/src/content/docs/*.md");
+  const paths = Object.keys(docs).map((path) => {
+    const slug = path.replace("/src/content/docs/", "").replace(".md", "");
+    return { params: { slug } };
+  });
 
-if (!doc) {
-  throw new Error(`Document with slug '${slug}' not found.`);
+  return paths; // Return the array directly
+}
+
+export async function get({ params }) {
+  const doc = await getEntry("docs", params.slug);
+  return { props: { doc } };
 }
 ---
 
 <Layout>
   <article class="prose mx-auto">
-    <h1>{doc.data.title}</h1>
-    <p class="text-gray-500">
-      {new Date(doc.data.pubDate).toLocaleDateString()}
-    </p>
-    <div>{doc.Content()}</div>
+    {
+      doc && (
+        <>
+          <h1>{doc.data.title}</h1>
+          <p class="text-gray-500">
+            {new Date(doc.data.pubDate).toLocaleDateString()}
+          </p>
+          {doc.Content && <div>{doc.Content()}</div>}
+        </>
+      )
+    }
+    {
+      !doc && (
+        <p class="text-red-500">
+          Document not found. Please check the URL and try again.
+        </p>
+      )
+    }
   </article>
 </Layout>

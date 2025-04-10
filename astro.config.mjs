@@ -3,15 +3,19 @@ import { defineConfig } from 'astro/config';
 
 import tailwind from '@astrojs/tailwind';
 import remarkWikiLink from 'remark-wiki-link';
+import solid from '@astrojs/solid-js';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [tailwind()],
+  integrations: [tailwind(), solid()],
   markdown: {
     remarkPlugins: [
       [
         remarkWikiLink,
         {
+          /**
+           * @param {string} permalink
+           */
           hrefTemplate: (permalink) => `/docs/${permalink}`, // Resolve [[wikilinks]] to /docs/<slug>
         },
       ],

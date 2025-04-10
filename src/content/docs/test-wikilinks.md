@@ -12,6 +12,7 @@ references:
   - '[[assemblage]]'
   - '[[rhizome]]'
 description: An exploration of Bruno Latour's Actor-Network Theory.
+date: "2025-04-09T00:00:00Z"
 ---
 
 # Test-wikilinks

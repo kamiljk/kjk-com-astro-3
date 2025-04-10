@@ -6,6 +6,7 @@ source: "Jennifer Pozner, Reality Bites Back (2010)"
 created: "2023-03-21"
 last_tended: "2023-03-21"
 epistemic_status: "Initial capture."
+date: "2023-03-21T00:00:00Z"
 ---
 **Definition:**  
 The Bachelor/Bachelorette franchise functions as a ritualized liminal event where contestants transition from obscurity to temporary celebrity while love is packaged, optimized, and sold as spectacle rather than authentic connection.

@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout>
+  <ul>
+    {
+      Object.keys(import.meta.glob("/src/content/docs/*.md")).map((doc) => (
+        <li>
+          <a
+            href={`/docs/${doc.replace("/src/content/docs/", "").replace(".md", "")}`}
+          >
+            {doc.replace("/src/content/docs/", "").replace(".md", "")}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

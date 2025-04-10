@@ -9,17 +9,22 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/solid-js": "^5.0.7",
+    "@lucide/astro": "^0.487.0",
     "astro": "^5.6.1",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
+    "lucide": "^0.487.0",
     "remark": "^15.0.1",
-    "remark-wiki-link": "^2.0.1"
+    "remark-wiki-link": "^2.0.1",
+    "solid-js": "^1.9.5"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
+    "sass-embedded": "^1.86.3",
     "tailwindcss": "^3.4.1"
   }
 }

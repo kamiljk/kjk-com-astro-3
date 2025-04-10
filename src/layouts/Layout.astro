@@ -1,3 +1,9 @@
+---
+import { Sun, Moon, CloudSun } from "@lucide/astro";
+import "../styles/global.scss"; // Import Sass-processed global styles
+import TestSpecimen from "../components/TestSpecimen.astro"; // Import the TestSpecimen component
+---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -9,31 +15,72 @@
   </head>
   <body>
     <header>
-      <!-- Header content, e.g., navigation -->
       <nav>
-        <a href="/">Home</a>
-        <a href="/docs">Docs</a>
-        <a href="/games">Games</a>
+        <ul>
+          <li><a href="/" astro:link>Home</a></li>
+          <li><a href="/docs" astro:link>Docs</a></li>
+          <li><a href="/games" astro:link>Games</a></li>
+        </ul>
       </nav>
     </header>
 
     <main>
-      <!-- Main content slot -->
       <slot />
+      <!-- Main content slot -->
     </main>
 
     <footer>
-      <!-- Footer content -->
       <p>&copy; 2025 My Astro Site. All rights reserved.</p>
     </footer>
+
+    <section>
+      <!-- Test Specimen Component -->
+      <TestSpecimen />
+    </section>
+
+    <div class="theme-toggle">
+      <button onclick="toggleTheme()" aria-label="Toggle theme" client:load>
+        <span id="theme-icon"></span>
+      </button>
+    </div>
+
+    <script>
+      if (typeof window !== "undefined") {
+        const savedTheme = localStorage.getItem("theme") || "medium";
+        document.body.className = savedTheme; // Set initial theme class on body
+
+        function updateThemeIcon() {
+          const themeToggleButton = document.querySelector("#theme-icon");
+          if (!themeToggleButton) return;
+
+          const currentTheme = document.body.className; // Use body class
+          themeToggleButton.innerHTML = "";
+
+          const iconHTML =
+            currentTheme === "dark"
+              ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"></path></svg>`
+              : currentTheme === "medium"
+                ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-sun"><path d="M12 2v2m6.36 1.64l-1.42 1.42M20 12h2m-1.64 6.36l-1.42-1.42M12 20v2m-6.36-1.64l1.42-1.42M4 12H2m1.64-6.36l1.42 1.42M12 6a4 4 0 100 8h5a3 3 0 100-6 4.5 4.5 0 00-5-2z"></path></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2m0 18v2m8.66-8.66h2M1 12h2m15.66-6.34l1.41-1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M4.93 4.93L3.52 3.52"></path></svg>`;
+
+          themeToggleButton.innerHTML = iconHTML;
+        }
+
+        window.toggleTheme = function () {
+          const currentTheme = document.body.className; // Use body class
+          const nextTheme =
+            currentTheme === "dark"
+              ? "medium"
+              : currentTheme === "medium"
+                ? "bright"
+                : "dark";
+          document.body.className = nextTheme; // Update body class
+          localStorage.setItem("theme", nextTheme);
+          updateThemeIcon();
+        };
+
+        document.addEventListener("DOMContentLoaded", updateThemeIcon);
+      }
+    </script>
   </body>
 </html>
-
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-</style>

@@ -6,6 +6,7 @@ source: "Fold"
 created: "2025-03-21"
 last_tended: "2025-03-21"
 epistemic_status: "Initial capture."
+date: "2025-03-21T00:00:00Z"
 ---
 **Definition:**  
 A Deleuzian concept describing how reality continuously bends upon itself, creating zones where inner experiences and external realities interact in dynamic relation.

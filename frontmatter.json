@@ -51,19 +51,6 @@
           "title": "epistemic_status",
           "name": "epistemic_status",
           "type": "string"
-<<<<<<< HEAD
-=======
-        },
-        {
-          "title": "fmContentType",
-          "name": "fmContentType",
-          "type": "string"
-        },
-        {
-          "title": "pubDate",
-          "name": "pubDate",
-          "type": "datetime"
->>>>>>> 477fb62 (Add initial definitions for various concepts related to liminality and social dynamics)
         }
       ]
     }
