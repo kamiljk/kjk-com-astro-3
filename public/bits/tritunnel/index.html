@@ -15,6 +15,9 @@
     let numTriangles = 5;
     let maxDepth;
     let baseSize;
+    let scrollSpeed = 0;
+    let isMonochrome = false;
+    let ditherEffect = false; // Placeholder to avoid errors if referenced elsewhere
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
@@ -28,6 +31,17 @@
           depth: map(i, 0, numTriangles - 1, 10, maxDepth)
         });
       }
+
+      // Add event listener for scroll
+      window.addEventListener('wheel', (event) => {
+        scrollSpeed += event.deltaY * 0.01;
+      });
+
+      // Add event listener for right-click
+      window.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        isMonochrome = !isMonochrome;
+      });
     }
 
     function draw() {
@@ -35,9 +49,13 @@
       translate(width / 2, height / 2);
 
       for (let tri of triangles) {
-        tri.depth -= 3;
+        tri.depth -= 3 + scrollSpeed; // Adjust depth based on scroll speed
+
+        // Ensure depth wraps around in both directions
         if (tri.depth < 10) {
-          tri.depth = maxDepth;
+          tri.depth += maxDepth;
+        } else if (tri.depth > maxDepth) {
+          tri.depth -= maxDepth;
         }
 
         let scale = pow(map(tri.depth, 0, maxDepth, 1.5, 0.02), 2.2);
@@ -48,6 +66,12 @@
         let r = 200 + 55 * sin(frameCount * 0.05 + tri.depth * 0.01);
         let g = 180 + 75 * sin(frameCount * 0.07 + tri.depth * 0.02);
         let b = 100 + 100 * sin(frameCount * 0.09 + tri.depth * 0.03);
+
+        if (isMonochrome) {
+          let gray = (r + g + b) / 3;
+          r = g = b = gray;
+        }
+
         stroke(r, g, b, alpha);
         strokeWeight(weight);
         beginShape();
@@ -62,6 +86,9 @@
         }
         endShape(CLOSE);
       }
+
+      // Gradually reduce scroll speed for smooth deceleration
+      scrollSpeed *= 0.95;
     }
 
     function windowResized() {
