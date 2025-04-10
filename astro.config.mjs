@@ -5,9 +5,12 @@ import tailwind from '@astrojs/tailwind';
 import remarkWikiLink from 'remark-wiki-link';
 import solid from '@astrojs/solid-js';
 
+import vercel from '@astrojs/vercel';
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [tailwind(), solid()],
+
   markdown: {
     remarkPlugins: [
       [
@@ -21,6 +24,7 @@ export default defineConfig({
       ],
     ],
   },
+
   vite: {
     server: {
       fs: {
@@ -29,4 +33,6 @@ export default defineConfig({
       },
     },
   },
+
+  adapter: vercel(),
 });
