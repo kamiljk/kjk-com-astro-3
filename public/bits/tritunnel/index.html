@@ -18,6 +18,7 @@
     let scrollSpeed = 0;
     let isMonochrome = false;
     let ditherEffect = false; // Placeholder to avoid errors if referenced elsewhere
+    let hiddenSwitch;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
@@ -32,15 +33,31 @@
         });
       }
 
+      // Create a hidden on/off switch off-canvas
+      hiddenSwitch = createCheckbox('', false);
+      hiddenSwitch.position(-100, -100); // Place it off-canvas
+
       // Add event listener for scroll
       window.addEventListener('wheel', (event) => {
         scrollSpeed += event.deltaY * 0.01;
       });
 
-      // Add event listener for right-click
+      // Add haptic feedback for iOS when toggling monochrome mode
       window.addEventListener('contextmenu', (event) => {
         event.preventDefault();
         isMonochrome = !isMonochrome;
+
+        // Trigger haptic feedback if supported
+        if (navigator.vibrate) {
+          navigator.vibrate(50); // Vibrate for 50ms
+        }
+
+        // Rapidly toggle the hidden switch
+        for (let i = 0; i < 10; i++) {
+          setTimeout(() => {
+            hiddenSwitch.checked(!hiddenSwitch.checked());
+          }, i * 10); // Rapid toggling with a short delay
+        }
       });
     }
 

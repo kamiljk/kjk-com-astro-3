@@ -1,531 +1,299 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
-const scoreDisplay = document.getElementById('score');
-const messageDisplay = document.getElementById('message');
-const gameContainer = document.querySelector('.game-container');
+
+// Ensure consistent font usage for all text rendering
+ctx.font = '1em "Press Start 2P", monospace';
+ctx.fillStyle = '#FFF'; // Default text color
+ctx.textAlign = 'left'; // Default text alignment
+
+// --- Load Custom Font ---
+const font = new FontFace('PressStart2P', 'url(../../lib/Press_Start_2P/PressStart2P-Regular.ttf)');
 
 // --- Game Constants ---
-const GHOST_WIDTH = 64;
-const GHOST_HEIGHT = 64;
-const GRAVITY = 0.15;
-const FLAP_STRENGTH = -3;
-const WALL_WIDTH = 50;
-const GAP_HEIGHT = 100;
-
-function getWallSpeed() {
-    return 2 + Math.floor(score / 10);
-}
-
-const SPAWN_INTERVAL = 60;
-
-// --- Colors ---
-const COLOR_PRIMARY = '#2a6e4f';
-const COLOR_ACCENT = '#202020';
-
-// --- Canvas Size ---
-// Set initial canvas size - will be properly resized later
-canvas.width = 320;
-canvas.height = 480;
+const SPRITE_FRAME_SIZE = 400;
+const GHOST_SCALE = 0.1;
+const GHOST_WIDTH = SPRITE_FRAME_SIZE * GHOST_SCALE;
+const GHOST_HEIGHT = SPRITE_FRAME_SIZE * GHOST_SCALE;
+const GRAVITY = 0.2;
+const FLAP_STRENGTH = -5;
+const FUN_SPRITE_CHANCE = 0.1; // 10% chance for fun sprite
+const COLOR_ACCENT = '#FF0000'; // Red accent color for "AGAIN"
+const FRAME_ROWS = 2;
+const FRAME_COLS = 2;
 
 // --- Game State ---
 let ghost;
-let obstacles;
-let frameCount;
-let score;
 let gameActive;
 let animationFrameId;
-let backgroundX = 0;
-let difficultyMultiplier = 1;
-let ghostFrame = 0;
-let ghostAnimationTicker = 0;
-const ghostAnimationSpeed = 10;
-
-// --- Ghost Animation Variables ---
-let ghostFrameIndex = 0;
-const ghostFrameCount = 4;
-const ghostFrameWidth = 400;
-const ghostFrameHeight = 400;
-const ghostSpriteCols = 2;
-
-const ghostSprite = new Image();
-
-// --- Fix: Create a more robust sprite loading system ---
-// Instead of relying on a potentially non-existent directory,
-// we'll use a default sprite and handle errors more gracefully
-ghostSprite.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAL5SURBVHhe7ZpNaxNRFIbHqCtdKLgQXAiCmy7UjeDClaBuFDeCCxeuXLhwI7gRRJ0k/QHiRnDlQheCCxWELgQhUFwUQQShoLQQaSGkkOT4npk7YTqZr5vpzUyT+8DDlHvPPWfeM3duMtMkFAqFQqEnGdKfA3N9frfN5OrHxSr3DgThPmQERLbGZ03m1o9LHR7iU6j/EOXlX2Zs6bMZ//nJTK1tm8m1PXN6850ZXSJ/lJgZXS5zhxeYH7jrU6j3SMHnturmwsaeGYmY1AQX/d0vu/QlMHPkR4gX7Afc67lQf+CSr1XqOgxCYIK8AZnP1nE7yCvAg/BANJbLqseLO1LPuBgT5AvSsjvQQOgM4BXwQiJpnBMY6ylDniAth7K7kCg/ztDjXbYO9LunvAB4AV6QN5zUcQHwwZx6sDRoeQl0Gmi2J0BqnkcDuYL0nZD9+OmH60fKQ6T9mOpRdXgGaDzIzznvOhGRlUXDPePUiR5wAaLH9fIjPAKiuEX1nAeeAZynL34vOMg+0Ovztp/iGYC4fXFHNQc8A+rVh+YE9J5x0fW5/2NAcO9ZF/QEXzVqWi6dIjsGcC/ZnxEy/QZohLfMlX/70bGy6zTZMaDXBj1BXvMHbQRpDGBeyO79onWe6HsD+BGiVd1XAe8IaWNAILydA/IIqPZ5KyDu0hzwnoBPgy0v8gyYSbQGZHqKcA5w3vUcEDQGBO794XacvAbwRgdvdvBmx6kTPeB7RH3UtjFAbncxwMXEqfMegPuuxwDdnrINwKYnbm9FzwG2Adi0mVR9FgNsA7DF7a3oOYBZ3/UYwBZVm8kA2wCuvTvoBthtsw3IbEDeJJr1OweA2yFP8C6R2wBsJgP83APYANfDHuBDoG2zGdDTZoCLCdb5BrRtI5kNcB/iXGN+A1w3GjAD+iEGnMgNUa/IuwbB+eNsQPB+yZcNyJcN6KmMNu52P/5/vaDmr+P/9UKaG/zfbigUCoXyQqHwD/obcibvkLVwAAAAAElFTkSuQmCC';
-
-// Event handlers for sprite loading
-ghostSprite.onload = () => {
-    // Only redraw if the game is active
-    if (gameActive) {
-        drawGame();
-    }
-};
-
-ghostSprite.onerror = () => {
-    console.error('Failed to load ghost sprite. Using fallback.');
-    // Already using a data URI as fallback, so no additional action needed
-};
+let ghostSprite = new Image();
+let funSprites = [];
+let frameIndex = 0;
+let lastFrameTime = 0;
+const FRAME_DURATION = 150; // ms between animation frames
+let score = 0; // Initialize score
 
 // --- Particle System ---
-let particles = [];
+const particles = [];
 
-function spawnParticles(x, y) {
-    for (let i = 0; i < 3; i++) {
-        particles.push({
-            x: x + GHOST_WIDTH / 2 + (Math.random() * 10 - 5),
-            y: y + GHOST_HEIGHT,
-            vx: (Math.random() - 0.5) * 1.5,
-            vy: Math.random() * -1,
-            alpha: 1,
-            size: 2
-        });
-    }
+// --- Adjusted Particle System for Grainy Effect ---
+function createParticle(x, y) {
+  particles.push({
+    x,
+    y: y + GHOST_HEIGHT / 2, // Position particles slightly below the ghost
+    size: Math.random() * 2 + 0.5, // Smaller size for subtle effect
+    alpha: 0.8, // Slightly transparent
+    velocityX: (Math.random() - 0.5) * 0.5, // Minimal horizontal velocity
+    velocityY: (Math.random() - 0.5) * 0.5, // Minimal vertical velocity
+    color: getRandomGrainyColor() // Grainy, dithered effect
+  });
 }
 
+function getRandomGrainyColor() {
+const colors = [
+    'rgba(240, 240, 240, 0.8)', 
+    'rgba(232, 232, 232, 0.8)', 
+    'rgba(220, 220, 220, 0.8)', 
+    'rgba(211, 211, 211, 0.8)', 
+    'rgba(207, 207, 207, 0.8)'
+]; // Dithered shades of off-white with transparency
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Adjust particle gravity to make them fall quicker
 function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.05; // gravity
-        p.alpha -= 0.02;
-        if (p.alpha <= 0) particles.splice(i, 1);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const particle = particles[i];
+    particle.x += particle.velocityX;
+    particle.y += particle.velocityY;
+    particle.velocityY += 0.1; // Increase gravity effect
+    particle.alpha -= 0.02; // Fade out
+
+    // Remove particle if it becomes invisible
+    if (particle.alpha <= 0) {
+      particles.splice(i, 1);
     }
+  }
 }
 
 function drawParticles() {
-    for (const p of particles) {
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = COLOR_PRIMARY;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-    }
-    ctx.globalAlpha = 1;
+  for (const particle of particles) {
+    ctx.globalAlpha = particle.alpha; // Set particle opacity
+    ctx.fillStyle = particle.color; // Use grainy color for dust effect
+    ctx.beginPath();
+    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1; // Reset global alpha
 }
 
-// --- Helper Functions ---
-function drawRect(x, y, w, h, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+// --- Load Sprites ---
+function loadSprites() {
+  // Load fun sprites from the "fun" folder
+  const funSpritePaths = [
+    './assets/fun/burrito-ghost.png',
+    './assets/fun/pizza-ghost.png',
+    './assets/fun/slime-ghost.png',
+    './assets/fun/toast-ghost.png'
+  ];
+
+  for (const path of funSpritePaths) {
+    const img = new Image();
+    img.src = path;
+    funSprites.push(img);
+  }
 }
 
-function drawSpikes(x, y, width, height) {
-    const spikeCount = Math.floor(width / 10);
-    const spikeWidth = width / spikeCount;
-    ctx.fillStyle = COLOR_ACCENT;
-    for (let i = 0; i < spikeCount; i++) {
-        const spikeX = x + i * spikeWidth;
-        ctx.beginPath();
-        ctx.moveTo(spikeX, y + height);
-        ctx.lineTo(spikeX + spikeWidth / 2, y);
-        ctx.lineTo(spikeX + spikeWidth, y + height);
-        ctx.closePath();
-        ctx.fill();
-    }
-}
-
-function drawGhost(x, y, width, height) {
-    // First draw a fallback rectangle (now more subtle)
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    ctx.fillRect(x, y, width, height);
-    
-    // Try to draw the sprite if loaded
-    if (ghostSprite.complete && ghostSprite.naturalWidth > 0) {
-        try {
-            // Fix: Simplified frame calculation to avoid index errors
-            const frameIndex = Math.min(ghostFrameIndex, ghostFrameCount - 1);
-            const sx = (frameIndex % ghostSpriteCols) * ghostFrameWidth;
-            const sy = Math.floor(frameIndex / ghostSpriteCols) * ghostFrameHeight;
-            
-            ctx.drawImage(
-                ghostSprite,
-                sx, sy, ghostFrameWidth, ghostFrameHeight,
-                x, y, width, height
-            );
-        } catch (e) {
-            // Error already handled by fallback rectangle
-        }
-    }
-}
-
-function resetGame() {
-    // Fix: Apply canvas sizing more carefully
-    applyCanvasSize();
-
-    ghost = {
-        x: canvas.width / 2 - GHOST_WIDTH / 2,
-        y: canvas.height / 2,
-        width: GHOST_WIDTH,
-        height: GHOST_HEIGHT,
-        velocity: 0,
-        horizontalVelocity: 0
-    };
-    obstacles = [];
-    frameCount = 0;
-    score = 0;
-    scoreDisplay.textContent = `Score: ${score}`;
-    messageDisplay.textContent = '';
-    messageDisplay.style.whiteSpace = 'normal';
-    scoreDisplay.style.display = 'block';
-    gameContainer.classList.remove('game-over');
-    gameContainer.classList.add('game-active');
-    gameActive = true;
-    scoreDisplay.style.color = COLOR_PRIMARY;
-
-    // Cancel previous loop if any, then start new one
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-    }
-    gameLoop();
-}
-
-// Fix: Better canvas sizing function that maintains game proportions
-function applyCanvasSize() {
-    // Get the available space
-    const maxWidth = window.innerWidth;
-    const maxHeight = window.innerHeight;
-    
-    // Set canvas size with a maximum (prevents it from getting too large)
-    canvas.width = Math.min(maxWidth, 800);
-    canvas.height = Math.min(maxHeight, 600);
-}
-
-function resizeCanvas() {
-    const previousWidth = canvas.width;
-    const previousHeight = canvas.height;
-    
-    applyCanvasSize();
-    
-    // Scale game elements proportionally if needed
-    if (gameActive && ghost) {
-        const widthRatio = canvas.width / previousWidth;
-        const heightRatio = canvas.height / previousHeight;
-        
-        // Update ghost position
-        ghost.x = Math.min(ghost.x * widthRatio, canvas.width - ghost.width);
-        ghost.y = Math.min(ghost.y * heightRatio, canvas.height - ghost.height);
-        
-        // Update obstacle positions
-        obstacles.forEach(obs => {
-            obs.x = Math.min(obs.x * widthRatio, canvas.width);
-            obs.y = Math.min(obs.y * heightRatio, canvas.height);
-        });
-    }
-}
-
-function spawnObstacle() {
-    const segmentWidth = 80;
-    const gapChance = Math.random() < 0.2; // 20% chance of a gap
-
-    if (!gapChance) {
-        obstacles.push({
-            x: canvas.width,
-            y: canvas.height / 2 + GHOST_HEIGHT / 2,
-            width: segmentWidth,
-            height: 20,
-            passed: false
-        });
-    }
-}
-
-// --- Animation State ---
-let isClickAnimation = false;
-const clickAnimationFrames = [2, 3];
-const normalAnimationFrames = [0, 1];
-
-let scoreMultiplier = 1;
-let clickCooldown = 0;
-
-function updateGame() {
-    if (!gameActive) return;
-
-    // Update ghost animation
-    ghostAnimationTicker++;
-    if (ghostAnimationTicker % ghostAnimationSpeed === 0) {
-        // Fix: Simplified animation frame handling to prevent index errors
-        if (isClickAnimation) {
-            ghostFrameIndex = clickAnimationFrames[ghostAnimationTicker % 2];
-            
-            // Reset to normal animation after a short period
-            if (ghostAnimationTicker >= ghostAnimationSpeed * 2) {
-                isClickAnimation = false;
-                ghostAnimationTicker = 0;
-            }
-        } else {
-            ghostFrameIndex = normalAnimationFrames[Math.floor(ghostAnimationTicker / ghostAnimationSpeed) % 2];
-        }
-    }
-
-    frameCount++;
-
-    // Adjust score logic
-    if (clickCooldown > 0) {
-        clickCooldown--;
-    } else {
-        score += 1 * scoreMultiplier;
-    }
-
-    if (ghost.velocity > 0) {
-        // Ghost is falling, exponentially increase score
-        scoreMultiplier = Math.min(scoreMultiplier * 1.05, 10);
-    } else {
-        // Ghost is rising or stable, reset multiplier
-        scoreMultiplier = 1;
-    }
-
-    scoreDisplay.textContent = `Score: ${Math.round(score)}`;
-
-    if (frameCount % SPAWN_INTERVAL === 0) {
-        spawnObstacle();
-    }
-
-    // Move obstacles
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        obstacles[i].x -= getWallSpeed();
-        
-        // Remove obstacles that have moved off-screen
-        if (obstacles[i].x + obstacles[i].width < 0) {
-            obstacles.splice(i, 1);
-        }
-    }
-
-    let onGround = false;
-
-    // Check if ghost is on a platform
-    for (const obs of obstacles) {
-        if (
-            ghost.x + ghost.width > obs.x &&
-            ghost.x < obs.x + obs.width &&
-            ghost.y + ghost.height >= obs.y &&
-            ghost.y + ghost.height <= obs.y + 10 // Small tolerance for landing
-        ) {
-            onGround = true;
-            ghost.y = obs.y - ghost.height;
-            break;
-        }
-    }
-
-    // Apply physics
-    if (!onGround) {
-        ghost.velocity += GRAVITY;
-        ghost.y += ghost.velocity;
-    } else {
-        if (ghost.velocity > 2) {
-            ghost.velocity = -ghost.velocity * 0.85; // Bounce with damping
-        } else {
-            ghost.velocity = 0; // Settle when low enough
-        }
-    }
-
-    // Update horizontal position
-    ghost.x += ghost.horizontalVelocity;
-    ghost.horizontalVelocity *= 0.9; // Apply friction
-
-    // Ensure ghost stays within canvas bounds
-    ghost.x = Math.max(0, Math.min(ghost.x, canvas.width - ghost.width));
-    ghost.y = Math.max(0, Math.min(ghost.y, canvas.height - ghost.height));
-
-    // Check if the ghost moves off-screen (now just the bottom since we constrain position)
-    if (ghost.y >= canvas.height - ghost.height) {
-        endGame();
-    }
-
-    // Check Collisions with obstacles
-    for (const obs of obstacles) {
-        if (
-            ghost.x < obs.x + obs.width &&
-            ghost.x + ghost.width > obs.x &&
-            ghost.y < obs.y + obs.height &&
-            ghost.y + ghost.height > obs.y
-        ) {
-            endGame();
-        }
-    }
-    
-    // Update and draw particles
-    updateParticles();
-}
-
-function endGame() {
-    gameActive = false;
-    gameContainer.classList.remove('game-active');
-    gameContainer.classList.add('game-over');
-    scoreDisplay.style.display = 'none';
-    messageDisplay.innerHTML = `
-        <div class="message-title">
-            BAD<br>GHOST<br>DON'T<br>DIE<br><span class="highlight">AGAIN</span>
-        </div>
-        <div class="message-body">
-            Game Over!<br>Score: <span style="color: ${COLOR_PRIMARY};">${Math.round(score)}</span>
-            <br>
-            <br>Click or Space to Restart
-        </div>
-    `;
-    cancelAnimationFrame(animationFrameId);
-}
-
-function drawGame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Set background
-    ctx.fillStyle = '#333333';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw ghost if within bounds
-    if (ghost && 
-        ghost.x >= 0 && ghost.x + ghost.width <= canvas.width &&
-        ghost.y >= 0 && ghost.y + ghost.height <= canvas.height) {
-        drawGhost(ghost.x, ghost.y, ghost.width, ghost.height);
-    }
-
-    // Draw obstacles
-    for (const obs of obstacles) {
-        drawSpikes(obs.x, obs.y, obs.width, obs.height);
-    }
-
-    // Draw particles
-    drawParticles();
-}
-
-function gameLoop() {
-    if (gameActive) {
-        updateGame();
-        drawGame();
-        animationFrameId = requestAnimationFrame(gameLoop);
-    } else {
-        cancelAnimationFrame(animationFrameId);
-    }
-}
-
-// --- Input Handling ---
-function handleInput() {
-    if (!gameActive) {
-        resetGame();
-    } else {
-        ghost.velocity = FLAP_STRENGTH;
-        spawnParticles(ghost.x, ghost.y);
-        isClickAnimation = true;
-        ghostAnimationTicker = 0; // Reset animation ticker
-        ghostFrameIndex = clickAnimationFrames[0];
-    }
-}
-
-// --- Motion Controls ---
-const NUDGE_FORCE = 1;
-
-function handleMouseClick(event) {
-    if (!gameActive) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const ghostCenterX = ghost.x + ghost.width / 2;
-
-    if (clickX < ghostCenterX) {
-        ghost.horizontalVelocity -= NUDGE_FORCE;
-    } else {
-        ghost.horizontalVelocity += NUDGE_FORCE;
-    }
-}
-
-function handleKeyboardInput(event) {
-    if (!gameActive) return;
-
-    if (event.code === 'ArrowLeft') {
-        ghost.horizontalVelocity -= NUDGE_FORCE;
-    } else if (event.code === 'ArrowRight') {
-        ghost.horizontalVelocity += NUDGE_FORCE;
-    }
-}
-
-function handleTouch(event) {
-    if (!gameActive) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const touchX = event.touches[0].clientX - rect.left;
-    const ghostCenterX = ghost.x + ghost.width / 2;
-
-    if (touchX < ghostCenterX) {
-        ghost.horizontalVelocity -= NUDGE_FORCE;
-    } else {
-        ghost.horizontalVelocity += NUDGE_FORCE;
-    }
-}
-
-// Ensure input listeners are properly set up
-function setupInputListeners() {
-    // Main control for flapping
-    canvas.addEventListener('click', handleInput);
-    
-    // Directional controls
-    canvas.addEventListener('mousedown', handleMouseClick);
-    window.addEventListener('keydown', (event) => {
-        if (event.code === 'Space') {
-            event.preventDefault();
-            handleInput();
-        } else {
-            handleKeyboardInput(event);
-        }
-    });
-    
-    // Touch controls
-    canvas.addEventListener('touchstart', (event) => {
-        event.preventDefault();
-        handleInput();
-        handleTouch(event);
-    }, { passive: false });
-}
-
-// Add event listener for window resize
-window.addEvebtListener('resize', resizeCanvas);
-
-// Fix the initial setup
+// --- Initialize Game ---
 function initializeGame() {
-    gameContainer.classList.remove('game-active');
-    gameContainer.classList.remove('game-over');
-    messageDisplay.innerHTML = `
-        <div class="message-title">
-            BAD<br>GHOST<br>DON'T<br>DIE<br><span class="highlight">AGAIN</span>
-        </div>
-    `;
-    scoreDisplay.style.display = 'none';
-    gameActive = false;
-    obstacles = [];
-    
-    // Apply proper canvas sizing
-    applyCanvasSize();
-    
-    // Initialize ghost with proper positioning
-    ghost = {
-        x: canvas.width / 2 - GHOST_WIDTH / 2,
-        y: canvas.height / 2,
-        width: GHOST_WIDTH,
-        height: GHOST_HEIGHT,
-        velocity: 0,
-        horizontalVelocity: 0
-    };
-    
-    score = 0;
-    frameCount = 0;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-    // Add a listener to start the game on the first interaction
-    const startGameHandler = () => {
-        resetGame();
-        window.removeEventListener('keydown', startGameHandler);
-        canvas.removeEventListener('click', startGameHandler);
-        canvas.removeEventListener('touchstart', startGameHandler);
-    };
-    
-    window.addEventListener('keydown', startGameHandler, { once: true });
-    canvas.addEventListener('click', startGameHandler, { once: true });
-    canvas.addEventListener('touchstart', startGameHandler, { once: true });
+  // Adjust canvas size on window resize
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
 
-    // Set up input listeners
-    setupInputListeners();
-    
-    // Draw the initial game state
-    drawGame();
+  resetGame();
+
+  // Add input listeners
+  canvas.addEventListener('click', flap);
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    flap(e);
+  }, { passive: false });
+
+  // Start the game loop
+  gameLoop();
 }
 
-// Call initializeGame to set up the initial state
-initializeGame();
+// --- Reset Game ---
+function resetGame() {
+  ghost = {
+    x: canvas.width / 2 - GHOST_WIDTH / 2,
+    y: canvas.height / 2 - GHOST_HEIGHT / 2,
+    velocity: 0,
+    sprite: Math.random() < FUN_SPRITE_CHANCE ? getRandomFunSprite() : ghostSprite
+  };
+  gameActive = true; // Reactivate the game
+  score = 0; // Reset score
+  console.log('Game reset!'); // Debug log to confirm reset
+}
+
+// --- Get Random Fun Sprite ---
+function getRandomFunSprite() {
+  return funSprites[Math.floor(Math.random() * funSprites.length)];
+}
+
+// --- Flap ---
+function flap(event) {
+  if (gameActive) {
+    const clickX = event.clientX;
+    const ghostCenterX = ghost.x + GHOST_WIDTH / 2;
+
+    // Determine direction of repulsion
+    if (clickX < ghostCenterX) {
+      ghost.x += 20; // Push ghost to the right
+    } else if (clickX > ghostCenterX) {
+      ghost.x -= 20; // Push ghost to the left
+    }
+
+    ghost.velocity = FLAP_STRENGTH;
+    score++; // Increment score on flap
+  }
+}
+
+// --- Update Game ---
+function updateGame() {
+  if (!gameActive) return;
+
+  // Apply gravity
+  ghost.velocity += GRAVITY;
+  ghost.y += ghost.velocity;
+
+  // Create particles at the ghost's position
+  createParticle(ghost.x + GHOST_WIDTH / 2, ghost.y + GHOST_HEIGHT / 2);
+
+  // Check if ghost falls off the screen
+  if (ghost.y > canvas.height + GHOST_HEIGHT) {
+    gameActive = false;
+    console.log('Game over! Waiting for player input to restart.');
+  }
+
+  // Update horizontal drift based on static wiggle
+  const sideAmplitude = 25; // max left/right movement from center
+  const sideFrequency = 0.002; // wiggle speed
+  const time = Date.now();
+  ghost.x = canvas.width / 2 - GHOST_WIDTH / 2 + Math.sin(time * sideFrequency) * sideAmplitude;
+
+  // Update frame index for animation
+  const now = Date.now();
+  if (now - lastFrameTime >= FRAME_DURATION) {
+    frameIndex = (frameIndex + 1) % (FRAME_ROWS * FRAME_COLS);
+    lastFrameTime = now;
+  }
+}
+
+// --- Draw Game ---
+function drawGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
+  ctx.fillStyle = '#fafafa'; // Set background color
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw the background
+
+  // Draw ghost with animation
+  const col = frameIndex % FRAME_COLS;
+  const row = Math.floor(frameIndex / FRAME_COLS);
+  const spriteX = col * SPRITE_FRAME_SIZE;
+  const spriteY = row * SPRITE_FRAME_SIZE;
+  ctx.drawImage(
+    ghost.sprite, 
+    spriteX, spriteY, // Source x and y in the sprite sheet
+    SPRITE_FRAME_SIZE, SPRITE_FRAME_SIZE, // Source width and height
+    ghost.x, ghost.y, // Destination x and y on the canvas
+    GHOST_WIDTH, GHOST_HEIGHT // Destination width and height on the canvas
+  );
+}
+
+// --- Draw Score ---
+function drawScore() {
+  ctx.font = '1em "Press Start 2P", monospace'; // Ensure consistent font
+  ctx.fillStyle = '#FFF'; // White text color
+  ctx.textAlign = 'left'; // Align text to the left
+  ctx.fillText(`Score: ${score}`, 10, 30); // Display score at the top-left corner
+}
+
+// --- Adjusted Game Over Screen Layout ---
+function drawGameOverScreen() {
+  const boxWidth = 300;
+  const boxHeight = 150;
+  const boxX = (canvas.width - boxWidth) / 2;
+  const boxY = (canvas.height - boxHeight) / 2;
+
+  // Draw black frame
+  ctx.fillStyle = '#000';
+  ctx.fillRect(boxX - 4, boxY - 4, boxWidth + 8, boxHeight + 8);
+
+  // Draw white box
+  ctx.fillStyle = '#FFF';
+  ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+  // Draw text
+  ctx.fillStyle = '#000';
+  ctx.font = '1em "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('BAD GHOST', canvas.width / 2, boxY + 50);
+  ctx.fillText("DON'T DIE", canvas.width / 2, boxY + 80);
+  ctx.fillText('AGAIN', canvas.width / 2, boxY + 110);
+}
+
+// --- Game Loop ---
+function gameLoop() {
+  if (gameActive) {
+    updateGame();
+    updateParticles(); // Update particles
+    drawGame();
+    drawParticles(); // Draw particles
+    drawScore(); // Draw the score on top
+    animationFrameId = requestAnimationFrame(gameLoop);
+  } else {
+    drawGameOverScreen();
+    cancelAnimationFrame(animationFrameId);
+  }
+}
+
+// Ensure resetGame is only called on user input
+canvas.addEventListener('click', () => {
+  if (!gameActive) {
+    resetGame();
+    gameLoop();
+  }
+});
+
+// --- Start Game ---
+Promise.all([
+  font.load().catch((err) => {
+    console.error('Failed to load font:', err);
+  }),
+  new Promise((resolve, reject) => {
+    ghostSprite.onload = () => {
+      console.log('Ghost sprite loaded successfully');
+      resolve();
+    };
+
+    ghostSprite.onerror = (err) => {
+      console.error('Failed to load ghost sprite:', err);
+      reject(err);
+    };
+
+    ghostSprite.src = './assets/ghost-sprite.png';
+  })
+]).then(() => {
+  document.fonts.add(font);
+  ctx.font = '1em PressStart2P'; // Set default font for the canvas
+  initializeGame(); // Start the game only after the font and sprite are loaded
+}).catch((err) => {
+  console.error('Game initialization failed:', err);
+});
+
+loadSprites();
